@@ -1,0 +1,55 @@
+cel:
+1. a FIB-ek statisztikainak megertese: miben ternek el a routeviews-rol letoltott RIBek es a valos routerek FIBjeinek statsztikai (prefix szinten azt
+    gondljuk keves az elteres, next-hop szinten a RIB abszolut mas eloszlast mutat) + FIB generator modell (routeviews RIB-prefixei + valami local route-ok
+    /24 alatt + Zipf next-hop eloszlas) + ezt viszonylag stabilan mondhatjuk az idoben
+
+2. jofajta FIB entropia  metrikak: konnyen szamolhato/ertheto + jol becsli a tomoritett meretet + intuitiv (ezert nem jo a prefix fa entropiaja): jeloltek:
+standard prefix-fa entropia, string magasabb rendu entropia, string run-length encoding
+
+3. evaluation: mennyire jok az entropiaink es mennyire jo a modell
+
+Felepites:
+
+0 RIB-FIB elteresek: abra- next-hops: FIB has real next-hop info, RIBs contain random next-hops (shortest AS path)
+- prefixes: FIB contains internal routes (inside AS, learned from IGP) + local routes (local interfaces) + recursively looked up routes (EGP -> IGP)
+- operational issues: RIBs merge data from multiple routers + management filtering prefixes on the RIB->FIB interface??? + default gw
+
+1. adatletoltes-tisztitas
+
+1.1- FIBek: full-BGP FIB-ek az adathalmazunkbol: vh1, vh2, bme, szeged
+- default gw es default gw nelkul is
+- sokszor dupla next-hop van: egyelore szedjuk ki az elsot, de aztan ra kell kerdezni a hbone-ban
++ kesobb esegleg be lehet hozni a nem full-bgp fib-eket is az adatsorbol (internet2, maradek hbone), de ezeket nem lehet osszehasonlitani a
+
+2. Routeviews: par vantage points: LINX, ???? (europa, usa, ausztralia)
+- 2013-tol napi statisztikakat letolteni: ugyanazokra a napokra, ugyanabbol az orabol/percbol
+
+- idosoranalizis: outlier-ek: ures es FIBek eltuntetese: az elozo het atlagatol legalabb 95%-kal elter
+
+> - RIB-FIB statistics: number of entries/time, more-specifics/time, prefix-length-distribiution/time, par erdekes dolog kene ide
+    RIB/FIB: key-value store, ahol a key-eknek van belso strukturaja
+
+kerdes: mennyire kovetkeztethetunk a RIB-vol a FIB-re??? egyszerre szeretnenk az egesz idosort jellemzi statisztikakat es konkretan idobeli eloszlasokat
+
+statisztikak:
+
+I./ csak a prefixek szintjen: prefixek szama + belso strukturajuk (prefix-length/more-less specifics)
+
+1. number of prefixes over time: az egesz idosort jellemzo statisztikak: szezonalitas + tendencia + korrelacios matrix (osszes parra)
+
+2. prefix-length statisztikak: az idoben: varhato ertek, median, variance
+
+3. (RIB - FIB) over time, (FIB - RIB) over time szintenkent (lehet, hogy a /8-akra jol tudunk kovtkeztetni a RIBbol, de a /24-ekre nem)
+-- kell minden parra (RIB-RIB, RIB-FIB, FIB-FIB)
+
+4. less/more-specifics idobeli szamuk:
+
+- number of more specifics (has parent), number of less specifics (has children) + independent prefixek
+- average/max/min number of _all_ children for less specifics (if parent, how many children it has, children of children also matter)
+- average/max/min number of _immediate_ children for less specifics (if parent, how many immediate children it has, excluding chuldren of children, etc.)
+
+5. bejegyzesek lifetime
+
+II/ next-hopok szintjen (value-ter): legkozelebb
+
+ > - FIB stats (unavailable on the RIB): next-hop stats (number/time, distribution, robustness in time, etc...)
