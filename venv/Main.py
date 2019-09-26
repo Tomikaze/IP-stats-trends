@@ -21,14 +21,21 @@ szeged = "^hbone_szeged"
 
 class Save:
 	time_stamp = ''
-	prefixCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	msp_count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	pref_count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	count = 0
+	sum_msp = 0
+	adv_range = 0
 
 	def __init__(self):
 		self.time_stamp = ''
-		self.prefixCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		                    0]
+		self.msp_count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		                  0]
+		self.pref_count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		                   0]
 		self.count = 0
+		self.sum_msp = 0
+		self.adv_range = 0
 
 	"""
 		Fájlba írja az osztályt
@@ -41,13 +48,30 @@ class Save:
 		with open(file_name, 'a+') as f:
 			# timestamp
 			f.write("\n" + str(self.time_stamp))
+
 			# prefix count
+			f.write("\ttotal_count:")
 			f.write("\t" + str(self.count))
+
+			# sum more specific prefix count
+			f.write("\tmsp_sum:")
+			f.write("\t" + str(self.sum_msp))
+
+			# prefix count
+			f.write("\tpref_count:")
+			for i in self.pref_count:
+				f.write("\t" + str(i))
+
 			# more specific prefixes
-			for i in self.prefixCount:
+			f.write("\tmsp_count:")
+			for i in self.msp_count:
 				f.write("\t" + str(i))
 
 			f.close()
+
+	def set_sum_msp(self):
+		for i in self.msp_count:
+			self.sum_msp += i
 
 	def set_date(self, f):
 		self.time_stamp = f.split('_', 2)[2].split('.')[0]
@@ -112,6 +136,10 @@ def store_to_list(filepath, wip):  # első prefix tárolása default gatewayel
 			# print("Line {}: {}".format(cnt, line.strip()))
 			tmp = line.split("\t")
 			tmp2 = tmp[0].split("/")
+
+			#diagram 3 hoz prefix ek számolása
+			wip.pref_count[int(tmp2[1].strip()) - 1] += 1
+
 			p = Ip(tmp2[0], tmp2[1], tmp[1].strip())
 			prefix = tmp2[0].split(".")
 			for i in prefix:
@@ -133,7 +161,7 @@ def store_to_list(filepath, wip):  # első prefix tárolása default gatewayel
 def mp_work(file):
 	proc = os.getpid()
 	start_time = datetime.datetime.now()
-	print('{0}  by process id: {1} at: {2}'.format(file, proc,start_time))
+	print('{0}  by process id: {1} at: {2}'.format(file, proc, start_time))
 
 	wip = Save()
 	pre_tree_root = TrieNode('*')
@@ -148,23 +176,24 @@ def mp_work(file):
 	for pr in storeList:
 		add(pre_tree_root, pr.bin[0:int(pr.prefix)])
 	print("end tree " + str(unzipLocation) + str(file))
+
+	wip.set_sum_msp()
+
 	end = datetime.datetime.now()
 	print(end - st)
 	for i in range(0, 32):
-		wip.prefixCount[i - 1] = sum_level(pre_tree_root, i)
+		wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
 	wip.end_game(file.split('_', 2)[1])
 	end_time = datetime.datetime.now()
-	print('{0}  by process id: {1} finished in: {2}'.format(file, proc, end_time-start_time))
-
-
-
+	print('{0}  by process id: {1} finished in: {2}'.format(file, proc, end_time - start_time))
 
 
 if __name__ == "__main__":
 	print('1: unzip')
 	print('2: save more specific prefix')
 	print('3: multiprocess test')
-	print('4: do test')
+	print('4: lock test')
+	print('5: do test')
 	cmd = input('mi legyen?')
 	if cmd == '1':
 		unzip()
@@ -193,7 +222,7 @@ if __name__ == "__main__":
 						end = datetime.datetime.now()
 						print(end - st)
 						for i in range(0, 32):
-							wip.prefixCount[i - 1] = sum_level(pre_tree_root, i)
+							wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
 						wip.end_game(file.split('_', 2)[1])
 
 		print("full program program " + str(datetime.datetime.now() - sta))
@@ -207,7 +236,7 @@ if __name__ == "__main__":
 
 		for root, dirs, files in os.walk(unzipLocation):
 			if files:
-				in_files=files
+				in_files = files
 
 		result = pool.map(mp_work, in_files)
 		print("full program program " + str(datetime.datetime.now() - start))
@@ -219,3 +248,22 @@ if __name__ == "__main__":
 				for f in files:
 					loc.append(str(root) + str(f))
 			print(loc)
+
+	if cmd == '5':
+		wip = Save()
+		pre_tree_root = TrieNode('*')
+
+		file="C:/fib data archive/extract/hbone_bme_2019_06_01_00_10_07.txt"
+		store_to_list(file, wip)
+		wip.set_date(file)
+
+		st = datetime.datetime.now()
+
+		for pr in storeList:
+			add(pre_tree_root, pr.bin[0:int(pr.prefix)])
+
+		end = datetime.datetime.now()
+		print(end - st)
+		for i in range(0, 32):
+			wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+		wip.end_game(file.split('_', 2)[1])
