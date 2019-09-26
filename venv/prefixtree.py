@@ -74,6 +74,29 @@ def find_prefix(root, prefix: str) -> Tuple[bool, int]:
 	return True, node.counter
 
 
+def count_first_letter(root, level) :
+
+
+
+
+	node = root
+
+	if not node.children:
+		return 0
+
+	sum = 0
+	if (level - 1 == 0):
+		for child in node.children:
+			sum += child.counter
+		return sum
+	else:
+		for child in node.children:
+			sum += sum_level(child, level - 1)
+		return1
+
+
+
+
 def sum_level(root, level):
 	if (level == 0):
 		return 0
@@ -91,6 +114,7 @@ def sum_level(root, level):
 
 
 if __name__ == "__main__":
+	count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	root = TrieNode('*')
 	prelist = [
 		"00",
