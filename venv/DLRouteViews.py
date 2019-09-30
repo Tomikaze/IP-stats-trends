@@ -72,6 +72,7 @@ if __name__ == "__main__":
 							mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
 
 
+
 	print(dloadlist[2].split('/')[7])
 
 	pool = Pool(processes = os.cpu_count())
