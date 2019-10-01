@@ -7,7 +7,7 @@ from prefixtree import TrieNode, add, sum_level
 from multiprocessing import Process, Pool
 import time
 
-location = 'C:/fib data archive'
+location = 'F:/fib data archive'
 unzipLocation = location + '/extract/'
 workFiles = []
 
