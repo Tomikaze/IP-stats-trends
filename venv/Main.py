@@ -3,11 +3,11 @@ import tarfile  # tar unzip
 import re  # regex
 import datetime
 from datetime import date
-from prefixtree import TrieNode, add, sum_level
+from prefixtree import TrieNode, add, sum_level, count_first_letter
 from multiprocessing import Process, Pool
 import time
 
-location = 'F:/fib data archive'
+location = 'C:/fib data archive'
 unzipLocation = location + '/extract/'
 workFiles = []
 
@@ -26,6 +26,7 @@ class Save:
 	count = 0
 	sum_msp = 0
 	adv_range = 0
+	per8 = 0
 
 	def __init__(self):
 		self.time_stamp = ''
@@ -36,6 +37,7 @@ class Save:
 		self.count = 0
 		self.sum_msp = 0
 		self.adv_range = 0
+		self.per8 = 0
 
 	"""
 		Fájlba írja az osztályt
@@ -49,23 +51,26 @@ class Save:
 			# timestamp
 			f.write("\n" + str(self.time_stamp))
 
-			# prefix count
+			# prefix count 1. diagram
 			f.write("\ttotal_count:")
 			f.write("\t" + str(self.count))
 
-			# sum more specific prefix count
+			# sum more specific prefix count 2. diagram
 			f.write("\tmsp_sum:")
 			f.write("\t" + str(self.sum_msp))
 
-			# prefix count
+			# prefix count 3. diagram
 			f.write("\tpref_count:")
 			for i in self.pref_count:
 				f.write("\t" + str(i))
 
-			# more specific prefixes
+			# more specific prefixes 4. diagram
 			f.write("\tmsp_count:")
 			for i in self.msp_count:
 				f.write("\t" + str(i))
+
+			# per 8 range 5. diagram
+			f.write("\tper 8:\t" + str(self.per8))
 
 			f.close()
 
@@ -125,19 +130,22 @@ def unzip():
 				os.remove(delfile)
 
 
-def store_to_list(filepath, wip):  # első prefix tárolása default gatewayel
+def store_to_list(filepath, wip):  # első prefix tárolása
 
 	tst = datetime.datetime.now()
 	storeList.clear()
 	with open(filepath) as fp:
 		line = fp.readline()
+		#default gateway kihagyása
+		if line[8] == '0':
+			line = fp.readline()
 		cnt = 1
 		while line:
 			# print("Line {}: {}".format(cnt, line.strip()))
 			tmp = line.split("\t")
 			tmp2 = tmp[0].split("/")
 
-			#diagram 3 hoz prefix ek számolása
+			# diagram 3 hoz prefix ek számolása
 			wip.pref_count[int(tmp2[1].strip()) - 1] += 1
 
 			p = Ip(tmp2[0], tmp2[1], tmp[1].strip())
@@ -177,7 +185,16 @@ def mp_work(file):
 		add(pre_tree_root, pr.bin[0:int(pr.prefix)])
 	print("end tree " + str(unzipLocation) + str(file))
 
+	for i in range(0, 32):
+		wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+
 	wip.set_sum_msp()
+
+	count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+	count_first_letter(pre_tree_root, 0, count_p8)
+	for i in range(8, 32):
+		wip.per8 += count_p8[i] * (1 / (2 ** (i - 8)))
 
 	end = datetime.datetime.now()
 	print(end - st)
@@ -253,7 +270,7 @@ if __name__ == "__main__":
 		wip = Save()
 		pre_tree_root = TrieNode('*')
 
-		file="C:/fib data archive/extract/hbone_bme_2019_06_01_00_10_07.txt"
+		file = "C:/fib data archive/extract/hbone_bme_2019_06_01_00_10_07.txt"
 		store_to_list(file, wip)
 		wip.set_date(file)
 
@@ -264,6 +281,17 @@ if __name__ == "__main__":
 
 		end = datetime.datetime.now()
 		print(end - st)
+		# for i in range(0, 32):
+		# 	wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+		#
+		# wip.set_sum_msp()
+
+		count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+		count_first_letter(pre_tree_root, 0, count_p8)
 		for i in range(0, 32):
-			wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+			wip.per8 += count_p8[i] * (1 / (2 ** (i - 8)))
+			print("per8 " + str(i) + ": " + str(count_p8[i]))
+			print("per8 normalized " + str(i) + ": " + str(count_p8[i] * (1 / (2 ** (i - 8)))))
+
 		wip.end_game(file.split('_', 2)[1])

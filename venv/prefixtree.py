@@ -28,7 +28,7 @@ def add(root, word: str):
 			if child.char == char:
 				# We found it, increase the counter by 1 to keep track that another
 				# word has it as well
-				if (child.word_finished and child.counter<1):
+				if (child.word_finished and child.counter < 1):
 					child.counter += 1
 				# And point the node to the child that contains this char
 				node = child
@@ -74,27 +74,20 @@ def find_prefix(root, prefix: str) -> Tuple[bool, int]:
 	return True, node.counter
 
 
-def count_first_letter(root, level) :
-
-
-
-
-	node = root
-
-	if not node.children:
+def count_first_letter(root, level, branch):
+	if not root:
 		return 0
+	node = root
+	# if not node.children:
+	# 	return 0
 
-	sum = 0
-	if (level - 1 == 0):
-		for child in node.children:
-			sum += child.counter
-		return sum
+	if node.word_finished:
+		branch[level] += 1
+		print("branch "+str(level)+": "+str(branch[level]))
+		return 1
 	else:
-		for child in node.children:
-			sum += sum_level(child, level - 1)
-		return1
-
-
+		count_first_letter(node.children[0], level + 1, branch)
+		count_first_letter(node.children[1], level + 1, branch)
 
 
 def sum_level(root, level):
@@ -103,7 +96,7 @@ def sum_level(root, level):
 
 	node = root
 	sum = 0
-	if (level -1 == 0):
+	if (level - 1 == 0):
 		for child in node.children:
 			sum += child.counter
 		return sum
@@ -161,23 +154,19 @@ if __name__ == "__main__":
 		"001011010",
 		"001011011"]
 
+	with open("C:/teszt/act.txt") as fp:
+		for line in fp:
+			add(root,line)
 
-	# with open("C:/fib 201906/save2.txt") as fp:
-	# 	for line in fp:
-	# 		add(root,line)
+	# for pr in prelist:
+	# 	add(root, pr)
 
-	for pr in prelist:
-		add(root, pr)
-
-	print(find_prefix(root, '00000001000000001'))
-	print(find_prefix(root, '000000010000000011110'))
-	print(find_prefix(root, '000000010000000011111'))
-	print(find_prefix(root, '0000000100000001010'))
-	print(find_prefix(root, '1101111111111111010'))
-	print(find_prefix(root, '11011111111111111100'))
-	print(find_prefix(root, '110111111111110100110'))
 	print(sum_level(root, 21))
 	print(sum_level(root, 17))
 	print(sum_level(root, 19))
 	print(sum_level(root, 8))
 	print(sum_level(root, 3))
+	print('------------')
+	count_first_letter(root, 0, count)
+	for i in count:
+		print(i)
