@@ -75,20 +75,14 @@ def find_prefix(root, prefix: str) -> Tuple[bool, int]:
 
 
 def count_first_letter(root, level, branch):
-	if not root:
-		return 0
 	node = root
-	# if not node.children:
-	# 	return 0
 
 	if node.word_finished:
-		branch[level] += 1
-		print("branch "+str(level)+": "+str(branch[level]))
-		return 1
+		branch[level-1] += 1
+	# print("branch "+str(level)+": "+str(branch[level]))
 	else:
-		count_first_letter(node.children[0], level + 1, branch)
-		count_first_letter(node.children[1], level + 1, branch)
-
+		for child in node.children:
+			count_first_letter(child, level + 1, branch)
 
 def sum_level(root, level):
 	if (level == 0):
@@ -168,5 +162,15 @@ if __name__ == "__main__":
 	print(sum_level(root, 3))
 	print('------------')
 	count_first_letter(root, 0, count)
+	cnt=0
 	for i in count:
-		print(i)
+		cnt += 1
+		print(str(cnt)+': '+str(i))
+	print('------------')
+	per8=0
+	for i in range(0, 32):
+		per8 += count[i] * (1 / (2 ** (i - 7)))
+		print("per8 " + str(i+1) + ": " + str(count[i]))
+		print("per8 normalized " + str(i+1) + ": " + str(count[i] * (1 / (2 ** (i - 7)))))
+
+	print('per8 Sum: '+str(per8))

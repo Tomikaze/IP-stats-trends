@@ -136,7 +136,7 @@ def store_to_list(filepath, wip):  # első prefix tárolása
 	storeList.clear()
 	with open(filepath) as fp:
 		line = fp.readline()
-		#default gateway kihagyása
+		# default gateway kihagyása
 		if line[8] == '0':
 			line = fp.readline()
 		cnt = 1
@@ -178,8 +178,6 @@ def mp_work(file):
 	wip.set_date(file)
 
 	print("start tree " + str(unzipLocation) + str(file))
-	st = datetime.datetime.now()
-	print(st)
 
 	for pr in storeList:
 		add(pre_tree_root, pr.bin[0:int(pr.prefix)])
@@ -193,13 +191,9 @@ def mp_work(file):
 	count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 	count_first_letter(pre_tree_root, 0, count_p8)
-	for i in range(8, 32):
-		wip.per8 += count_p8[i] * (1 / (2 ** (i - 8)))
-
-	end = datetime.datetime.now()
-	print(end - st)
 	for i in range(0, 32):
-		wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+		wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+
 	wip.end_game(file.split('_', 2)[1])
 	end_time = datetime.datetime.now()
 	print('{0}  by process id: {1} finished in: {2}'.format(file, proc, end_time - start_time))
@@ -281,17 +275,15 @@ if __name__ == "__main__":
 
 		end = datetime.datetime.now()
 		print(end - st)
-		# for i in range(0, 32):
-		# 	wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
-		#
-		# wip.set_sum_msp()
+		for i in range(0, 32):
+			wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+
+		wip.set_sum_msp()
 
 		count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 		count_first_letter(pre_tree_root, 0, count_p8)
 		for i in range(0, 32):
-			wip.per8 += count_p8[i] * (1 / (2 ** (i - 8)))
-			print("per8 " + str(i) + ": " + str(count_p8[i]))
-			print("per8 normalized " + str(i) + ": " + str(count_p8[i] * (1 / (2 ** (i - 8)))))
+			wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
 
 		wip.end_game(file.split('_', 2)[1])
