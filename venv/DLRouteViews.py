@@ -4,23 +4,39 @@ import os  # file műveletek
 import datetime
 from datetime import date
 
+ix = 'linx'  # linx  sydney  jinx  eqix
+
 url = 'http://archive.routeviews.org/route-views.linx/bgpdata/2013.11/RIBS/rib.20131101.0000.bz2'
 file = 'F:/route views linx/rib.20131101.0000.bz2'
-file_loc='F:/route views linx/'
+file_loc = 'F:/route views ' + ix + '/'
 
 dloadlist = []
 mo = ''
 da = ''
 
-def dload (url):
+
+
+def log_dl_err(loc, error, filename):
+	with open(loc + 'error.txt', 'a+') as f:
+		f.write(error + '\t' + filename + '\t' + '\n')
+		f.close()
+
+
+
+def dload(url):
 	proc = os.getpid()
 	start_time = datetime.datetime.now()
 	print('{0}  by process id: {1} at: {2}'.format(url, proc, start_time))
 
-	file_name=url.split('/')[7]
-	with urllib.request.urlopen(url) as response, open(file_loc+file_name, 'wb') as out_file:
-		data = response.read()  # a `bytes` object
-		out_file.write(data)
+	file_name = url.split('/')[7]
+	try:
+		if not os.path.isfile(file_loc + file_name):
+			with urllib.request.urlopen(url) as response, open(file_loc + file_name, 'wb') as out_file:
+				data = response.read()  # a `bytes` object
+				out_file.write(data)
+	except printurllib.error.URLError as e:
+		print(e.reason)
+		log(file_loc, e.reason, file_name)
 
 	end_time = datetime.datetime.now()
 	print('{0}  by process id: {1} finished in: {2}'.format(url, proc, end_time - start_time))
@@ -44,8 +60,9 @@ if __name__ == "__main__":
 						else:
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
-						dloadlist.append('http://archive.routeviews.org/route-views.linx/bgpdata/201' + str(y) + '.' + str(
-							mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
+						dloadlist.append(
+							'http://archive.routeviews.org/route-views.' + ix + '/bgpdata/201' + str(y) + '.' + str(
+								mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
 					if (m == 4 or m == 6 or m == 9 or m == 11) and d < 31:
 						if m < 10:
 							mo = '0' + str(m)
@@ -56,8 +73,9 @@ if __name__ == "__main__":
 						else:
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
-						dloadlist.append('http://archive.routeviews.org/route-views.linx/bgpdata/201' + str(y) + '.' + str(
-							mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
+						dloadlist.append(
+							'http://archive.routeviews.org/route-views.' + ix + '/bgpdata/201' + str(y) + '.' + str(
+								mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
 					if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 12:
 						if m < 10:
 							mo = '0' + str(m)
@@ -68,10 +86,9 @@ if __name__ == "__main__":
 						else:
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
-						dloadlist.append('http://archive.routeviews.org/route-views.linx/bgpdata/201' + str(y) + '.' + str(
-							mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
-
-
+						dloadlist.append(
+							'http://archive.routeviews.org/route-views.' + ix + '/bgpdata/201' + str(y) + '.' + str(
+								mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
 
 	print(dloadlist[2].split('/')[7])
 
