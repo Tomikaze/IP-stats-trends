@@ -7,8 +7,8 @@ from prefixtree import TrieNode, add, sum_level, count_first_letter
 from multiprocessing import Process, Pool
 import time
 
-location = 'C:/fib data archive'
-unzipLocation = location + '/extract/'
+location = 'E:/fib_data_archive/2019'
+unzipLocation = 'E:/2019' + '/extract/'
 workFiles = []
 
 storeList = []
@@ -108,22 +108,28 @@ Csak a 4 full bgp fájlt tartja meg.
 """
 
 
-def unzip():
-	for root, dirs, files in os.walk(location):
+def unzip(wF):
+	proc = os.getpid()
+	start_time = datetime.datetime.now()
+	print('Unzipping {0}  by process id: {1} at: {2}'.format(wF, proc, start_time))
+	un_zipped = False
+	tmp=wF.split("/")[3].split('.')[0].split('-')
+	k=tmp[0]+'_'+tmp[1]+'_'+tmp[2]
+	for root, dirs,files in os.walk(unzipLocation):
 		if files:
-			loc = root + '/' + ''.join(files)
-			# print(loc)
-			workFiles.append(loc)
-
-	for wF in workFiles:
-		print('unzipping: ' + wF)
+			for file in files:
+				if re.search(k, str(file)):
+					un_zipped = True
+					print('Already unzipped {0}'.format(wF))
+					break
+	if not un_zipped:
 		with tarfile.open(wF) as f:
 			f.extractall(unzipLocation)
 
-		workingFiles = []
+		unzipped_files = []
 		for root, dirs, files in os.walk(unzipLocation):
-			workingFiles = files
-		for x in workingFiles:
+			unzipped_files = files
+		for x in unzipped_files:
 			if not re.search(vh1, x) and not re.search(vh2, x) and not re.search(bme, x) and not re.search(szeged, x):
 				delfile = unzipLocation + x
 				# print('delete file: ' + delfile)
@@ -207,7 +213,14 @@ if __name__ == "__main__":
 	print('5: do test')
 	cmd = input('mi legyen?')
 	if cmd == '1':
-		unzip()
+		for root, dirs, files in os.walk(location):
+			if files:
+				loc = root + '/' + ''.join(files)
+				# print(loc)
+				workFiles.append(loc)
+
+	pool = Pool(processes = os.cpu_count())
+	result = pool.map(unzip, workFiles)
 
 	if cmd == '2':
 		sta = datetime.datetime.now()
