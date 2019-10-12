@@ -7,8 +7,8 @@ from prefixtree import TrieNode, add, sum_level, count_first_letter
 from multiprocessing import Process, Pool
 import time
 
-location = 'E:/fib_data_archive/2019'
-unzipLocation = 'E:/2019' + '/extract/'
+location = 'F:/2019'
+unzipLocation = 'F:/2019' + '/extract/'
 workFiles = []
 
 storeList = []
@@ -151,20 +151,25 @@ def store_to_list(filepath, wip):  # első prefix tárolása
 			tmp = line.split("\t")
 			tmp2 = tmp[0].split("/")
 
-			# diagram 3 hoz prefix ek számolása
-			wip.pref_count[int(tmp2[1].strip()) - 1] += 1
-
 			p = Ip(tmp2[0], tmp2[1], tmp[1].strip())
 			prefix = tmp2[0].split(".")
 			for i in prefix:
 				p.bin += bin(int(i))[2:].zfill(8)
 			if cnt == 1:
 				storeList.append(p)
+
+				# diagram 3 hoz prefix ek számolása
+				wip.pref_count[int(tmp2[1].strip()) - 1] += 1
+
 				cnt += 1
 
 			if (cnt > 1 and not (storeList[storeList.__len__() - 1].address == p.address and storeList[
 				storeList.__len__() - 1].prefix == p.prefix)):
 				storeList.append(p)
+
+				# diagram 3 hoz prefix ek számolása
+				wip.pref_count[int(tmp2[1].strip()) - 1] += 1
+
 				# print(storeList[cnt-1].address)
 				cnt += 1
 			line = fp.readline()
@@ -207,6 +212,7 @@ def mp_work(file):
 
 if __name__ == "__main__":
 	print('1: unzip')
+	print('1.1: unzip single file')
 	print('2: save more specific prefix')
 	print('3: multiprocess test')
 	print('4: lock test')
@@ -221,6 +227,20 @@ if __name__ == "__main__":
 
 	pool = Pool(processes = os.cpu_count())
 	result = pool.map(unzip, workFiles)
+
+	if cmd == '1.1':
+		s = input('file')
+		with tarfile.open(s) as f:
+			f.extractall(unzipLocation)
+
+		unzipped_files = []
+		for root, dirs, files in os.walk(unzipLocation):
+			unzipped_files = files
+		for x in unzipped_files:
+			if not re.search(vh1, x) and not re.search(vh2, x) and not re.search(bme, x) and not re.search(szeged, x):
+				delfile = unzipLocation + x
+				# print('delete file: ' + delfile)
+				os.remove(delfile)
 
 	if cmd == '2':
 		sta = datetime.datetime.now()
@@ -277,7 +297,7 @@ if __name__ == "__main__":
 		wip = Save()
 		pre_tree_root = TrieNode('*')
 
-		file = "C:/fib data archive/extract/hbone_bme_2019_06_01_00_10_07.txt"
+		file = "F:/2019/extract/hbone_vh1_2019_06_07_00_27_03.txt"
 		store_to_list(file, wip)
 		wip.set_date(file)
 
