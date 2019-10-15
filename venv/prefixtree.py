@@ -155,6 +155,7 @@ if __name__ == "__main__":
 	# for pr in prelist:
 	# 	add(root, pr)
 
+
 	print(sum_level(root, 21))
 	print(sum_level(root, 17))
 	print(sum_level(root, 19))
