@@ -9,51 +9,55 @@ import re  # regex
 # bgpdump rib.20190101.0000.bz2 -O 20190101.txt
 
 location = 'C:/teszt/rib/'  # '/mnt/c/teszt/rib/'
+bz2 = 'rib_bz2/'
+txt = 'rib_txt/'
+fib = 'rib_fib/'
 
 file = 'rib_20131101.txt'  # rib_20131101.txt  rib.20131101.0000.bz2
 rib = []
 out_list = []
+pref = ''
+next = ''
 
 
-def read_rib(rib_file):
-	out_name = 'rib_' + rib_file.split('.')[1] + '.txt'
-	myCmd = 'bgpdump ' + location + rib_file + ' -O ' + location + out_name
+def read_rib(rib_bz2_file):
+	out_name = 'rib_' + rib_bz2_file.split('.')[1] + '.txt'
+	myCmd = 'bgpdump ' + location + bz2 + rib_bz2_file + ' -O ' + location + txt + out_name
 	print(myCmd)
 	os.system(myCmd)
 
 
-def convert_to_fib_format(rib_txt):
-	with open(location + rib_txt) as fp:
+def convert_to_fib_format(rib_txt_file):
+	proc = os.getpid()
+	start_time = datetime.datetime.now()
+	print('{0}  by process id: {1} at: {2}'.format(rib_txt_file, proc, start_time))
+	pref = ''
+	next = ''
+	with open(location + txt + rib_txt_file) as fp:
 		line = fp.readline()
+		while line:
+			if re.search('^PREFIX', line):
+				pref = (line.split(' ')[1].strip())
+			if re.search('^NEXT_HOP', line):
+				next = (line.split(' ')[1].strip())
+			line = fp.readline()
+			if pref and next:
+				if ':' not in pref:
+					out_list.append(pref + '\t' + next)
+					pref = ''
+					next = ''
+				else:
+					break
 
-		if re.search('^PREFIX', line):
-			pref = (line.split(' ')[1])
-		if re.search('^NEXT_HOP', line):
-			next = (line.split(' ')[1])
-
-		out_list.append(pref + '\t' + next)
+	with open(location + fib + 'kesz_' + rib_txt_file, 'w') as f:
+		for i in out_list:
+			f.write(str(i) + '\n')
 
 
 if __name__ == "__main__":
 
-	# for root, dirs, files in os.walk(location):
-	# 	rib = files
-	#
-	# pool = Pool(processes = os.cpu_count())
-	# result = pool.map(read_rib, rib)
+	for root, dirs, files in os.walk(location + txt):
+		rib = files
 
-	pref = ''
-	next = ''
-	with open(location + file) as fp:
-		line = fp.readline()
-		while line:
-			if re.search('^PREFIX', line):
-				pref = (line.split(' ')[1])
-			if re.search('^NEXT_HOP', line):
-				next = (line.split(' ')[1])
-
-		out_list.append(pref + '\t' + next)
-
-	with open(location + 'kesz_' + file, 'w') as f:
-		for i in out_list:
-			f.write(str(i) + "\n")
+	pool = Pool(processes = os.cpu_count())
+	result = pool.map(convert_to_fib_format, rib)

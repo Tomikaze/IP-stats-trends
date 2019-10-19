@@ -5,6 +5,8 @@
       <option name="SPACE_AROUND_EQ_IN_KEYWORD_ARGUMENT" value="true" />
     </Python>
     <codeStyleSettings language="Python">
+      <option name="RIGHT_MARGIN" value="200" />
+      <option name="WRAP_ON_TYPING" value="0" />
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />
         <option name="SMART_TABS" value="true" />
