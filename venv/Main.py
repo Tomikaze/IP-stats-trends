@@ -4,7 +4,7 @@ import re  # regex
 import datetime
 from datetime import date
 from prefixtree import TrieNode, add, sum_level, count_first_letter
-from multiprocessing import Process, Pool
+from multiprocessing import Pool, Lock
 import time
 import copy
 
@@ -18,6 +18,11 @@ vh1 = "^hbone_vh1"
 vh2 = "^hbone_vh2"
 bme = "^hbone_bme"
 szeged = "^hbone_szeged"
+
+
+def init(l):
+	global lock
+	lock = l
 
 
 class Save:
@@ -293,7 +298,9 @@ def mp_work_single(file):
 		for i in range(0, 32):
 			wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
 
+		lock.acquire()
 		wip.end_game(file.split('_', 2)[1])
+		lock.release()
 		end_time = datetime.datetime.now()
 	delete_left_over(date,unzipped)
 	print('{0}  by process id: {1} finished in: {2}'.format(file, proc, end_time - start_time))
@@ -324,9 +331,11 @@ if __name__ == "__main__":
 				if file.split('.')[-1] == 'xz':
 					workFiles.append(root + '/' + file)
 
-	# pool = Pool(processes = os.cpu_count())
+	# pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	pool = Pool(processes = 1)
 	result = pool.map(mp_work_single, workFiles)
+	pool.close()
+	pool.join()
 
 	if cmd == '1.1':
 		s = input('file')

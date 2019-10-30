@@ -1,6 +1,6 @@
 import os
 import datetime
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 import re  # regex
 
 # cd /mnt/c/users/bakit/PycharmProjects/IP-stats-trends/venv
@@ -18,6 +18,11 @@ rib = []
 out_list = []
 pref = ''
 next = ''
+
+
+def init(l):
+	global lock
+	lock = l
 
 
 def read_rib(rib_bz2_file):
@@ -49,9 +54,12 @@ def convert_to_fib_format(rib_txt_file):
 				else:
 					break
 
+	lock.acquire()
 	with open(location + fib + 'kesz_' + rib_txt_file, 'w') as f:
 		for i in out_list:
 			f.write(str(i) + '\n')
+
+	lock.release()
 
 
 if __name__ == "__main__":
@@ -59,5 +67,7 @@ if __name__ == "__main__":
 	for root, dirs, files in os.walk(location + txt):
 		rib = files
 
-	pool = Pool(processes = os.cpu_count())
+	pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	result = pool.map(convert_to_fib_format, rib)
+	pool.close()
+	pool.join()

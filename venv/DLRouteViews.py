@@ -1,5 +1,5 @@
 import urllib.request, urllib.error
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 import os  # file műveletek
 import datetime
 from datetime import date
@@ -15,11 +15,18 @@ mo = ''
 da = ''
 
 
+def init(l):
+	global lock
+	lock = l
+
+
 def log_dl_err(loc, error, filename):
+	lock.acquire()
 	with open(loc + 'error.txt', 'a+') as f:
 		time = datetime.datetime.now()
 		f.write(error + '\t' + filename + '\t' + str(time) + '\t' + '\n')
 		f.close()
+	lock.release()
 
 
 def dload(url):
@@ -89,8 +96,10 @@ if __name__ == "__main__":
 
 	# print(dloadlist[2].split('/')[7])
 
-	pool = Pool(processes = os.cpu_count())
+	pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	result = pool.map(dload, dloadlist)
+	pool.close()
+	pool.join()
 
 # myfile = requests.get(url)
 # open('F:/route views linx/rib.20131101.0000.bz2', 'wb').write(myfile.content)
