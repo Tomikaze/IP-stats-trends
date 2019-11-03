@@ -8,9 +8,10 @@ from multiprocessing import Pool, Lock
 import time
 import copy
 
-all = ['2013/'] # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = '/mnt/fib_archive/'  # /mnt/fib_archive/     F:/fib_data_archive/
-
+all = ['2016/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
+location = 'F:/fib_data_archive/2018'  # /mnt/fib_archive/     F:/fib_data_archive/
+save_files = ['F:/Fib_done/New folder1/2018_save_bme_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_szeged_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_vh1_19-11-03.txt',
+              'F:/Fib_done/New folder1/2018_save_vh2_19-11-03.txt']
 workFiles = []
 
 storeList = []
@@ -62,13 +63,19 @@ class Save:
 		Fájlba írja az osztályt
 	"""
 
-	def end_game(self, f):
-		save_loc = f.rsplit('_', 8)[0]
+	def end_game(self, f, save_files):
 		save_name = f.rsplit('_')[-7]
-		today = datetime.date.today().strftime("%y-%m-%d")
-		file_name = save_loc + '_save_' + save_name + '_' + str(today) + '.txt'
+		work_save_file = ''
+		if save_name in save_files[0]:
+			work_save_file = save_files[0]
+		if save_name in save_files[1]:
+			work_save_file = save_files[1]
+		if save_name in save_files[2]:
+			work_save_file = save_files[2]
+		if save_name in save_files[3]:
+			work_save_file = save_files[3]
 
-		with open(file_name, 'a+') as f:
+		with open(work_save_file, 'a+') as f:
 			# timestamp
 			f.write("\n" + str(self.time_stamp))
 
@@ -127,34 +134,6 @@ class Ip:
 """
 Csak a 4 full bgp fájlt tartja meg.
 """
-
-
-def unzip(wF):
-	proc = os.getpid()
-	start_time = datetime.datetime.now()
-	print('Unzipping {0}  by process id: {1} at: {2}'.format(wF, proc, start_time))
-	un_zipped = False
-	tmp = wF.split("/")[3].split('.')[0].split('-')
-	k = tmp[0] + '_' + tmp[1] + '_' + tmp[2]
-	for root, dirs, files in os.walk(unzipLocation):
-		if files:
-			for file in files:
-				if re.search(k, str(file)):
-					un_zipped = True
-					print('Already unzipped {0}'.format(wF))
-					break
-	if not un_zipped:
-		with tarfile.open(wF) as f:
-			f.extractall(unzipLocation)
-
-		unzipped_files = []
-		for root, dirs, files in os.walk(unzipLocation):
-			unzipped_files = files
-		for x in unzipped_files:
-			if not re.search(vh1, x) and not re.search(vh2, x) and not re.search(bme, x) and not re.search(szeged, x):
-				delfile = unzipLocation + x
-				# print('delete file: ' + delfile)
-				os.remove(delfile)
 
 
 def unzip_single(wF):
@@ -239,37 +218,36 @@ def store_to_list(filepath, wip):  # első prefix tárolása
 	wip.count = cnt
 
 
-def mp_work(file):
-	proc = os.getpid()
-	start_time = datetime.datetime.now()
-	print('{0}  by process id: {1} at: {2}'.format(file, proc, start_time))
+'''
+Meg kell keresni az elkeszult fileban hogy melyik van mar kesz
 
-	wip = Save()
-	pre_tree_root = TrieNode('*')
+:returns TRUE ha mar kesz van
+:returns FALSE ha meg nincs meg
+'''
 
-	store_to_list(str(unzipLocation) + str(file), wip)
-	wip.set_date(file)
 
-	print("start tree " + str(unzipLocation) + str(file))
-
-	for pr in storeList:
-		add(pre_tree_root, pr.bin[0:int(pr.prefix)])
-	print("end tree " + str(unzipLocation) + str(file))
-
-	for i in range(0, 32):
-		wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
-
-	wip.set_sum_msp()
-
-	count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-	count_first_letter(pre_tree_root, 0, count_p8)
-	for i in range(0, 32):
-		wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
-
-	wip.end_game(file.split('_', 2)[1])
-	end_time = datetime.datetime.now()
-	print('{0}  by process id: {1} finished in: {2}'.format(file, proc, end_time - start_time))
+def already_done(fib_file, save_files):
+	# hbone_bme_2016_01_05_00_10_30.txt
+	# ez kell   ^^^^^^^^^^^^^^^^^^^
+	search_key = fib_file.split('_', 2)[2].split('.')[0]
+	search_save_file = fib_file.split('_', 2)[1]
+	work_save_file = ''
+	if search_save_file in save_files[0]:
+		work_save_file = save_files[0]
+	if search_save_file in save_files[1]:
+		work_save_file = save_files[1]
+	if search_save_file in save_files[2]:
+		work_save_file = save_files[2]
+	if search_save_file in save_files[3]:
+		work_save_file = save_files[3]
+	with open(work_save_file) as wsf:
+		line = wsf.readline()
+		while (line):
+			if search_key in line:
+				print(line)
+				return True
+			line = wsf.readline()
+	return False
 
 
 def mp_work_single(file):
@@ -277,14 +255,15 @@ def mp_work_single(file):
 	start_time = datetime.datetime.now()
 	print('Process ID: {0} \t at: {1} started file: {2}'.format(proc, start_time, file))
 	unzipLocation = file.rsplit('/', 2)[0] + '_extract/'
-	try:
-		unzipped_with_date = unzip_single(file)
-		end_unzip_time = datetime.datetime.now()
-		print('Process ID: {0} \t at: {1} unzipped file: {2}'.format(proc, end_unzip_time, file))
-		date = unzipped_with_date[0]
-		unzipped = unzipped_with_date[1]
 
-		for file in unzipped:
+	unzipped_with_date = unzip_single(file)
+	end_unzip_time = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} unzipped file: {2}'.format(proc, end_unzip_time, file))
+	date = unzipped_with_date[0]
+	unzipped = unzipped_with_date[1]
+
+	for file in unzipped:
+		if not already_done(file, save_files):
 			wip = Save()
 			pre_tree_root = TrieNode('*')
 			wip.blank_sheet()
@@ -309,15 +288,10 @@ def mp_work_single(file):
 				wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
 
 			lock.acquire()
-			wip.end_game(unzipLocation + file)
+			wip.end_game(file, save_files)
 			lock.release()
-		end_time = datetime.datetime.now()
-		delete_left_over(unzipLocation, date, unzipped)
-	except Exception as e:
-		log_mp_work_err(location, e, file)
-		print(e)
-		print(file)
-
+	end_time = datetime.datetime.now()
+	delete_left_over(unzipLocation, date, unzipped)
 	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
 
 
@@ -360,36 +334,26 @@ def mp_work_rib(file):
 
 if __name__ == "__main__":
 	print('start: just jump into it')
-	print('rib: unzip single file')
-	print('1: unzip')
-	print('2: save more specific prefix')
-	print('3: multiprocess test')
-	print('4: lock test')
-	print('5: do test')
+	print('rib: work on ribs')
 	cmd = input('mi legyen?')
-	if cmd == '1':
-		for root, dirs, files in os.walk(location):
-			if files:
-				loc = root + '/' + ''.join(files)
-				# print(loc)
-				workFiles.append(loc)
-		pool = Pool(processes = os.cpu_count())
-		result = pool.map(unzip, workFiles)
 
 	if cmd == 'start':
-		for date in all:
-			for root, dirs, files in os.walk(location + date):
-				for file in files:
-					if file.split('.')[-1] == 'xz':
-						workFiles.append(root + '/' + file)
-						print(file)
+		fib_locations = 'F:/fib_data_archive/2018'
+		save_files = ['F:/Fib_done/New folder1/2018_save_bme_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_szeged_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_vh1_19-11-03.txt',
+		              'F:/Fib_done/New folder1/2018_save_vh2_19-11-03.txt']
 
-		l = Lock()
-		pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
-		# pool = Pool(initializer = init, initargs = (l,), processes = 1)
-		result = pool.map(mp_work_single, workFiles)
-		pool.close()
-		pool.join()
+		for root, dirs, files in os.walk(location):
+			for file in files:
+				if file.split('.')[-1] == 'xz':
+					workFiles.append(root + '/' + file)
+					print(file)
+	# asd = already_done('hbone_bme_2016_01_05_00_10_30.txt',save_files)
+	l = Lock()
+	# pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
+	pool = Pool(initializer = init, initargs = (l,), processes = 4)
+	result = pool.map(mp_work_single, workFiles)
+	pool.close()
+	pool.join()
 
 	if cmd == 'rib':
 		for root, dirs, files in os.walk(location):
@@ -403,82 +367,3 @@ if __name__ == "__main__":
 		result = pool.map(mp_work_rib, workFiles)
 		pool.close()
 		pool.join()
-
-	if cmd == '2':
-		sta = datetime.datetime.now()
-		print("start program: " + str(sta))
-
-		for root, dirs, files in os.walk(unzipLocation):
-			if files:
-				for file in files:
-					if re.search(vh1, str(file)):
-						wip = Save()
-						pre_tree_root = TrieNode('*')
-
-						store_to_list(str(root) + str(file), wip)
-						wip.set_date(file)
-
-						print("start tree" + str(root) + str(file))
-						st = datetime.datetime.now()
-						print(st)
-
-						for pr in storeList:
-							add(pre_tree_root, pr.bin[0:int(pr.prefix)])
-						print("end tree" + str(root) + str(file))
-						end = datetime.datetime.now()
-						print(end - st)
-						for i in range(0, 32):
-							wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
-						wip.end_game(file.split('_', 2)[1])
-
-		print("full program program " + str(datetime.datetime.now() - sta))
-
-	if cmd == '3':
-		start = datetime.datetime.now()
-		print("start program: " + str(start))
-
-		in_files = []
-		pool = Pool(processes = os.cpu_count())
-
-		for root, dirs, files in os.walk(unzipLocation):
-			if files:
-				in_files = files
-
-		result = pool.map(mp_work, in_files)
-		print("full program program " + str(datetime.datetime.now() - start))
-
-	if cmd == '4':
-		loc = []
-		for root, dirs, files in os.walk(unzipLocation):
-			if files:
-				for f in files:
-					loc.append(str(root) + str(f))
-			print(loc)
-
-	if cmd == '5':
-		wip = Save()
-		pre_tree_root = TrieNode('*')
-
-		file = "F:/2019/extract/hbone_vh1_2019_06_07_00_27_03.txt"
-		store_to_list(file, wip)
-		wip.set_date(file)
-
-		st = datetime.datetime.now()
-
-		for pr in storeList:
-			add(pre_tree_root, pr.bin[0:int(pr.prefix)])
-
-		end = datetime.datetime.now()
-		print(end - st)
-		for i in range(0, 32):
-			wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
-
-		wip.set_sum_msp()
-
-		count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-		count_first_letter(pre_tree_root, 0, count_p8)
-		for i in range(0, 32):
-			wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
-
-		wip.end_game(file.split('_', 2)[1])
