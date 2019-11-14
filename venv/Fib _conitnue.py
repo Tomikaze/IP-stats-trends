@@ -9,9 +9,9 @@ import time
 import copy
 
 all = ['2016/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = 'F:/fib_data_archive/2018'  # /mnt/fib_archive/     F:/fib_data_archive/
-save_files = ['F:/Fib_done/New folder1/2018_save_bme_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_szeged_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_vh1_19-11-03.txt',
-              'F:/Fib_done/New folder1/2018_save_vh2_19-11-03.txt']
+location = 'F:/fib_data_archive/2016'  # /mnt/fib_archive/     F:/fib_data_archive/
+save_files = ['F:/Fib_done/New folder1/2016_save_bme_19-11-03.txt', 'F:/Fib_done/New folder1/2016_save_szeged_19-11-03.txt', 'F:/Fib_done/New folder1/2016_save_vh1_19-11-03.txt',
+              'F:/Fib_done/New folder1/2016_save_vh2_19-11-03.txt']
 workFiles = []
 
 storeList = []
@@ -101,6 +101,7 @@ class Save:
 			f.write("\tper 8:\t" + str(self.per8))
 
 			f.close()
+
 
 	def set_sum_msp(self):
 		for i in self.msp_count:
@@ -295,6 +296,51 @@ def mp_work_single(file):
 	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
 
 
+def mp_work_single_wo_lock(file):
+	proc = os.getpid()
+	start_time = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} started file: {2}'.format(proc, start_time, file))
+	unzipLocation = file.rsplit('/', 2)[0] + '_extract/'
+
+	unzipped_with_date = unzip_single(file)
+	end_unzip_time = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} unzipped file: {2}'.format(proc, end_unzip_time, file))
+	date = unzipped_with_date[0]
+	unzipped = unzipped_with_date[1]
+
+	for file in unzipped:
+		if not already_done(file, save_files):
+			wip = Save()
+			pre_tree_root = TrieNode('*')
+			wip.blank_sheet()
+			store_to_list(str(unzipLocation) + str(date) + '/' + str(file), wip)
+			wip.set_date(file)
+
+			start_tree_time = datetime.datetime.now()
+			for pr in storeList:
+				add(pre_tree_root, pr.bin[0:int(pr.prefix)])
+			end_tree_time = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished TREE: {2} in: {3}'.format(proc, end_tree_time, file, end_tree_time - start_tree_time))
+
+			for i in range(0, 32):
+				wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+
+			wip.set_sum_msp()
+
+			count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+			count_first_letter(pre_tree_root, 0, count_p8)
+			for i in range(0, 32):
+				wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+
+
+			wip.end_game(file, save_files)
+
+	end_time = datetime.datetime.now()
+	delete_left_over(unzipLocation, date, unzipped)
+	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
+
+
 def mp_work_rib(file):
 	proc = os.getpid()
 	start_time = datetime.datetime.now()
@@ -334,14 +380,13 @@ def mp_work_rib(file):
 
 if __name__ == "__main__":
 	print('start: just jump into it')
+	print('single: single fib')
 	print('rib: work on ribs')
+
 	cmd = input('mi legyen?')
 
 	if cmd == 'start':
-		fib_locations = 'F:/fib_data_archive/2018'
-		save_files = ['F:/Fib_done/New folder1/2018_save_bme_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_szeged_19-11-03.txt', 'F:/Fib_done/New folder1/2018_save_vh1_19-11-03.txt',
-		              'F:/Fib_done/New folder1/2018_save_vh2_19-11-03.txt']
-
+		location = 'F:/fib_data_archive/2016'
 		for root, dirs, files in os.walk(location):
 			for file in files:
 				if file.split('.')[-1] == 'xz':
@@ -354,6 +399,10 @@ if __name__ == "__main__":
 	result = pool.map(mp_work_single, workFiles)
 	pool.close()
 	pool.join()
+
+	if cmd == 'single':
+		location = 'F:/fib_data_archive/2016'
+		mp_work_single_wo_lock('F:/fib_data_archive/2016/2016-02-10_backup/2016-02-10.tar.xz')
 
 	if cmd == 'rib':
 		for root, dirs, files in os.walk(location):

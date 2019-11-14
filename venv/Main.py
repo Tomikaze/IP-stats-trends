@@ -8,8 +8,9 @@ from multiprocessing import Pool, Lock
 import time
 import copy
 
-all = ['2013/'] # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = '/mnt/fib_archive/'  # /mnt/fib_archive/     F:/fib_data_archive/
+all = ['2013/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
+location = '/mnt/rib_linx_fib_format/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/
+rib_save_loc = '/mnt/'  # /mnt/   F:/
 
 workFiles = []
 
@@ -67,6 +68,37 @@ class Save:
 		save_name = f.rsplit('_')[-7]
 		today = datetime.date.today().strftime("%y-%m-%d")
 		file_name = save_loc + '_save_' + save_name + '_' + str(today) + '.txt'
+
+		with open(file_name, 'a+') as f:
+			# timestamp
+			f.write("\n" + str(self.time_stamp))
+
+			# prefix count 1. diagram
+			f.write("\ttotal_count:")
+			f.write("\t" + str(self.count))
+
+			# sum more specific prefix count 2. diagram
+			f.write("\tmsp_sum:")
+			f.write("\t" + str(self.sum_msp))
+
+			# prefix count 3. diagram
+			f.write("\tpref_count:")
+			for i in self.pref_count:
+				f.write("\t" + str(i))
+
+			# more specific prefixes 4. diagram
+			f.write("\tmsp_count:")
+			for i in self.msp_count:
+				f.write("\t" + str(i))
+
+			# per 8 range 5. diagram
+			f.write("\tper 8:\t" + str(self.per8))
+
+			f.close()
+
+	def rib_end_game(self, f):
+		today = datetime.date.today().strftime("%y-%m-%d")
+		file_name = rib_save_loc + '_save_' + f + '_' + str(today) + '.txt'
 
 		with open(file_name, 'a+') as f:
 			# timestamp
@@ -331,7 +363,10 @@ def mp_work_rib(file):
 
 	wip.blank_sheet()
 	store_to_list(str(file), wip)
-	wip.set_date(file)
+
+	# get date from fib format file name 'F:/rib_linx_fib_format/sydney_rib_20131101.txt'
+	# wip.set_date(file)                                                    ^^^^^^^^
+	wip.time_stamp = file.split('_')[-1].split('.')[0]
 
 	start_tree_time = datetime.datetime.now()
 	for pr in storeList:
@@ -341,6 +376,8 @@ def mp_work_rib(file):
 
 	for i in range(0, 32):
 		wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+	end_msp_count = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} finished counting msp: {2} in: {3}'.format(proc, end_msp_count, file, end_msp_count - end_tree_time))
 
 	wip.set_sum_msp()
 
@@ -349,9 +386,12 @@ def mp_work_rib(file):
 	count_first_letter(pre_tree_root, 0, count_p8)
 	for i in range(0, 32):
 		wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+	end_per8 = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} finished PER 8: {2} in: {3}'.format(proc, end_per8, file, end_per8 - end_msp_count))
 
-	lock.acquire()
-	wip.end_game(file.split('_', 2)[1])
+	# lock.acquire()
+	# endgame gets the linx from the directory name : 'F:/rib_linx_fib_format/sydney_rib_20131101.txt'
+	wip.rib_end_game(file.split('_')[1]+'_'+wip.time_stamp[:4])
 	lock.release()
 
 	end_time = datetime.datetime.now()
@@ -360,7 +400,7 @@ def mp_work_rib(file):
 
 if __name__ == "__main__":
 	print('start: just jump into it')
-	print('rib: unzip single file')
+	print('rib: work on rib')
 	print('1: unzip')
 	print('2: save more specific prefix')
 	print('3: multiprocess test')
@@ -398,8 +438,8 @@ if __name__ == "__main__":
 					workFiles.append(root + '/' + file)
 
 		l = Lock()
-		pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
-		# pool = Pool(processes = 1)
+		# pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
+		pool = Pool(processes = 1)
 		result = pool.map(mp_work_rib, workFiles)
 		pool.close()
 		pool.join()
