@@ -4,3 +4,4 @@ venv/__pycache__/prefixtree.cpython-37.pyc
 .idea/
 venv/__pycache__/prefixtree.cpython-38.pyc
 *.pyc
+.idea/untitled.iml
