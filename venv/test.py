@@ -7,6 +7,8 @@ from prefixtree import TrieNode, add, sum_level, count_first_letter
 from multiprocessing import Pool, Lock
 import time
 import copy
+import random
+
 
 # location = 'F:/fib_data_archive/2014/'  # /mnt/fib_archive/2013
 #
@@ -43,3 +45,6 @@ for i in range(8,32):
     start+=str(i)+p
 start+="32\'"
 print(start)
+
+for i in range(20):
+    print(random.randint(15453988313675, 29421883821487))
