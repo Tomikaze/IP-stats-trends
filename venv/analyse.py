@@ -118,6 +118,69 @@ def reformat_csv_date(filepath, file):
 	fp.close
 
 
+def reformat_csv_deli_comma(filepath, file):
+	out_list = []
+	storeList.clear()
+	with open(filepath + file) as fp:
+		line = fp.readline()
+
+		while line:
+			line_parts = line.split(";")
+			line = ','.join(line_parts)
+			out_list.append(line)
+			line = fp.readline()
+
+	fp.close()
+	with open(filepath + '/a/' + file, "w") as fp:
+		for line in out_list:
+			fp.write(line)
+	fp.close
+
+	def reformat_csv_deli_comma(filepath, file):
+		out_list = []
+		storeList.clear()
+		with open(filepath + file) as fp:
+			line = fp.readline()
+
+			while line:
+				line_parts = line.split(";")
+				line = ','.join(line_parts)
+				out_list.append(line)
+				line = fp.readline()
+
+		fp.close()
+		with open(filepath + '/a/' + file, "w") as fp:
+			for line in out_list:
+				fp.write(line)
+		fp.close
+
+
+def reformat_csv_date_point_to_dash(filepath, file):
+	out_list = []
+	storeList.clear()
+	with open(filepath + file) as fp:
+		line = fp.readline()
+		line = fp.readline()
+
+		while line:
+			# print("Line {}: {}".format(cnt, line.strip()))
+			line_parts = line.split(";", 1)
+			date = line_parts[0]
+			new_date = date[0] + date[1] + date[2] + date[3] + '-' + date[5] + date[6] + '-' + date[8] + date[9]
+			out_list.append(new_date + ';' + line_parts[1])
+			line = fp.readline()
+
+	fp.close()
+	with open(filepath + '/a/' + file, "w") as fp:
+		header = "Date	Total_count	Msp_sum	Pref_1	Pref_2	Pref_3	Pref_4	Pref_5	Pref_6	Pref_7	Pref_8	Pref_9	Pref_10	Pref_11	Pref_12	Pref_13	Pref_14	Pref_15	Pref_16	Pref_17	Pref_18	Pref_19	Pref_20	Pref_21	Pref_22	Pref_23	Pref_24	Pref_25	Pref_26	Pref_27	Pref_28	Pref_29	Pref_30	Pref_31	Pref_32	Msp_1	Msp_2	Msp_3	Msp_4	Msp_5	Msp_6	Msp_7	Msp_8	Msp_9	Msp_10	Msp_11	Msp_12	Msp_13	Msp_14	Msp_15	Msp_16	Msp_17	Msp_18	Msp_19	Msp_20	Msp_21	Msp_22	Msp_23	Msp_24	Msp_25	Msp_26	Msp_27	Msp_28	Msp_29	Msp_30	Msp_31	Msp_32	Per_8\n"
+		header_parts = header.split("\t")
+		header = ';'.join(header_parts)
+		fp.write(header)
+		for line in out_list:
+			fp.write(line)
+	fp.close
+
+
 def get_full_date():
 	for y in range(3, 10):
 		for m in range(1, 13):
@@ -186,6 +249,38 @@ def write_file(dest_filepath, dst_file):
 	out_list.clear()
 
 
+def delete_outliers(filepath, file):
+	out_list = []
+	storeList.clear()
+	with open(filepath + file) as fp:
+		header = fp.readline()
+		line = fp.readline()
+
+		while line:
+			if len(out_list) > 1:
+				line_parts = line.split(",")
+				total = float(line_parts[1])
+				prev_total = int(out_list[-1].split(",")[1]) * 0.95
+				if total < prev_total:
+					print(out_list[-1])
+					print(line)
+				else:
+					out_list.append(line)
+			else:
+				out_list.append(line)
+			line = fp.readline()
+
+	fp.close()
+	with open(filepath + '/a/' + file, "w") as fp:
+		header = "Date	Total_count	Msp_sum	Pref_1	Pref_2	Pref_3	Pref_4	Pref_5	Pref_6	Pref_7	Pref_8	Pref_9	Pref_10	Pref_11	Pref_12	Pref_13	Pref_14	Pref_15	Pref_16	Pref_17	Pref_18	Pref_19	Pref_20	Pref_21	Pref_22	Pref_23	Pref_24	Pref_25	Pref_26	Pref_27	Pref_28	Pref_29	Pref_30	Pref_31	Pref_32	Msp_1	Msp_2	Msp_3	Msp_4	Msp_5	Msp_6	Msp_7	Msp_8	Msp_9	Msp_10	Msp_11	Msp_12	Msp_13	Msp_14	Msp_15	Msp_16	Msp_17	Msp_18	Msp_19	Msp_20	Msp_21	Msp_22	Msp_23	Msp_24	Msp_25	Msp_26	Msp_27	Msp_28	Msp_29	Msp_30	Msp_31	Msp_32	Per_8\n"
+		header_parts = header.split("\t")
+		header = ','.join(header_parts)
+		fp.write(header)
+		for line in out_list:
+			fp.write(line)
+	fp.close
+
+
 def store_to_df():
 	print("send help")
 
@@ -196,32 +291,32 @@ full_date_list = []
 out_list = []
 
 if __name__ == "__main__":
-	# source= "eqix"
-	# ix = ['jinx', 'linx', 'sydney', 'eqix']
-	# location = 'F:/Fib_done/RIB'
-	# dest_loc = 'F:/Fib_done/'
-	# dst_file = source+".csv"
-	#
-	# for root, dirs, files in os.walk(location):
-	# 	for file in files:
-	# 		if file.split('.')[-1] == 'csv':
-	# 			if source in file:
-	# 				workFiles.append(root + '/' + file)
-	# 				append_csv_by_source(root + '/', file)
-	# 				print(file)
-	# write_file(dest_loc, dst_file)
+	source = "eqix"
+	ix = ['jinx', 'linx', 'eqix', 'sydney', 'bme', 'szeged', 'vh1', 'vh2']
+	location = 'D:/Users/Baki/Documents/GitHub/IP-stats-trends/venv/csv'  # 'F:/Fib_done/RIB'
+	dest_loc = 'F:/Fib_done/'
+	dst_file = source + ".csv"
 
-	bme = pd.read_csv("F:/Fib_done/bme.csv", parse_dates = ["Date"], index_col = "Date")
+	for root, dirs, files in os.walk(location):
+		for file in files:
+			if file.split('.')[-1] == 'csv':
+				for src in ix:
+					if src in file:
+						workFiles.append(root + '/' + file)
+						delete_outliers(root + '/', file)
+						print(file)
+# write_file(dest_loc, dst_file)
 
-	for i in range(48, 95):
-		plot = bme.iloc[i * 20:i * 20 + 1].mean().plot(
-			y = ['Pref_8', 'Pref_9', 'Pref_10', 'Pref_11', 'Pref_12', 'Pref_13', 'Pref_14', 'Pref_15', 'Pref_16', 'Pref_17', 'Pref_18', 'Pref_19', 'Pref_20', 'Pref_21', 'Pref_22', 'Pref_23',
-			     'Pref_24', 'Pref_25', 'Pref_26', 'Pref_27', 'Pref_28', 'Pref_29', 'Pref_30', 'Pref_31', 'Pref_32'], figsize = (40, 20), kind = "pie")
-		# plot.set_yscale('log')
-		plot.set_ylim([0, 500000])
-		fig = plot.get_figure()
-		fig.savefig("F:/kep/"+str(i) + ".png")
-
+# bme = pd.read_csv("F:/Fib_done/bme.csv", parse_dates = ["Date"], index_col = "Date")
+#
+# for i in range(48, 95):
+# 	plot = bme.iloc[i * 20:i * 20 + 1].mean().plot(
+# 		y = ['Pref_8', 'Pref_9', 'Pref_10', 'Pref_11', 'Pref_12', 'Pref_13', 'Pref_14', 'Pref_15', 'Pref_16', 'Pref_17', 'Pref_18', 'Pref_19', 'Pref_20', 'Pref_21', 'Pref_22', 'Pref_23',
+# 		     'Pref_24', 'Pref_25', 'Pref_26', 'Pref_27', 'Pref_28', 'Pref_29', 'Pref_30', 'Pref_31', 'Pref_32'], figsize = (40, 20), kind = "pie")
+# 	# plot.set_yscale('log')
+# 	plot.set_ylim([0, 500000])
+# 	fig = plot.get_figure()
+# 	fig.savefig("F:/kep/"+str(i) + ".png")
 
 # get_full_date()
 
