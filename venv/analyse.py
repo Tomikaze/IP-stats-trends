@@ -281,6 +281,42 @@ def delete_outliers(filepath, file):
 	fp.close
 
 
+def delete_all_outliers(filepath, file):
+	out_list = []
+	storeList.clear()
+	with open(filepath + file) as fp:
+		header = fp.readline()
+		line = fp.readline()
+
+		while line:
+			if len(out_list) > 1:
+				act = line.split(",")
+				pre = out_list[-1].split(",")
+				for a, p in zip(act, pre):
+					if "-" not in a:
+						if float(a) < float(p) * 0.95:
+							print
+							# a = floor(float(p) * 0.95)
+
+						if float(a) > float(p) * 1.05:
+							# a = floor(float(p) * 1.05)
+
+						else:
+							out_list.append(line)
+			else:
+				out_list.append(line)
+			line = fp.readline()
+
+	fp.close()
+
+
+# with open(filepath + '/a/' + file, "w") as fp:
+# 	fp.write(header)
+# 	for line in out_list:
+# 		fp.write(line)
+# fp.close
+
+
 def store_to_df():
 	print("send help")
 
@@ -293,7 +329,7 @@ out_list = []
 if __name__ == "__main__":
 	source = "eqix"
 	ix = ['jinx', 'linx', 'eqix', 'sydney', 'bme', 'szeged', 'vh1', 'vh2']
-	location = 'D:/Users/Baki/Documents/GitHub/IP-stats-trends/venv/csv'  # 'F:/Fib_done/RIB'
+	location = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv'  # 'F:/Fib_done/RIB'
 	dest_loc = 'F:/Fib_done/'
 	dst_file = source + ".csv"
 
@@ -303,7 +339,7 @@ if __name__ == "__main__":
 				for src in ix:
 					if src in file:
 						workFiles.append(root + '/' + file)
-						delete_outliers(root + '/', file)
+						delete_all_outliers(root + '/', file)
 						print(file)
 # write_file(dest_loc, dst_file)
 
@@ -317,6 +353,11 @@ if __name__ == "__main__":
 # 	plot.set_ylim([0, 500000])
 # 	fig = plot.get_figure()
 # 	fig.savefig("F:/kep/"+str(i) + ".png")
+
+
+'''
+'Pref_1', 'Pref_2', 'Pref_3', 'Pref_4', 'Pref_5', 'Pref_6', 'Pref_7', 'Pref_8', 'Pref_9', 'Pref_10', 'Pref_11', 'Pref_12', 'Pref_13', 'Pref_14', 'Pref_15', 'Pref_16', 'Pref_17', 'Pref_18', 'Pref_19', 'Pref_20', 'Pref_21', 'Pref_22', 'Pref_23', 'Pref_24', 'Pref_25', 'Pref_26', 'Pref_27', 'Pref_28', 'Pref_29', 'Pref_30', 'Pref_31', 'Pref_32'
+'''
 
 # get_full_date()
 
