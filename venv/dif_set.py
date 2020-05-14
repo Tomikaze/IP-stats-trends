@@ -50,6 +50,7 @@ def write_diff_set_csv(list, f):
 		header = "Date  diff_prev_1	diff_prev_2	diff_prev_3	diff_prev_4	diff_prev_5	diff_prev_6	diff_prev_7	diff_prev_8	diff_prev_9	diff_prev_10	diff_prev_11	diff_prev_12	diff_prev_13	diff_prev_14	diff_prev_15	diff_prev_16	diff_prev_17	diff_prev_18	diff_prev_19	diff_prev_20	diff_prev_21	diff_prev_22	diff_prev_23	diff_prev_24	diff_prev_25	diff_prev_26	diff_prev_27	diff_prev_28	diff_prev_29	diff_prev_30	diff_prev_31	diff_prev_32\n"
 		header_parts = header.split("\t")
 		header = ','.join(header_parts)
+
 		fp.write(header)
 		for item in storeList:
 			# timestamp
