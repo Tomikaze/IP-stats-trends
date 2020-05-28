@@ -1,3 +1,59 @@
+###########################################################################################
+1. azonos formara hozni a RIB-eket es a FIB-enket, mert majd egyuttes
+eloszlasokat kell szamolni.
+
+ezt ugy fogjuk csinalni mondjuk egy konkret RIB-re vagy FIB-re, hogy atirjuk
+string-alakba: a string 2^32 hosszu lesz (4GB), az elso pozicioba beirjuk a
+0.0.0.0 IP cimhez tartozo next-hop szimbolumot, a masodik pozicioba a 0.0.0.1
+IP cimhez tartozo next-hop-ot, es igy tovabb, egeszen a 2^32 pozicioig, ahova
+a 255.255.255.255 IP cimhez tartozo next-hop megy (invalid). mivel a string
+nagyon nagy (nem hiszem, hogy a python megbirkozna vele), ezert egy ugy
+nevezett futashossz-kodolt (RLE,
+https://en.wikipedia.org/wiki/Run-length_encoding) formaban fogjuk tarolni: a
+prefix fabol az RLE forma konnyen eloallithato, majd elmondom, hogyan.
+
+2. egyuttes next-hop eloszlas szamitasa
+
+tekintsunk mondjuk egy FIB peldanyt, legyen ennek a next-hop halmaza X es a
+fenti string reprezentacioja (akar RLE formaban tarolva) s_x, es egy RIB
+peldanyt, legyen ennek a next-hop halmaza Y es a string reprezentacioja s_y.
+celunk, hogy a p(x,y) egyuttes eloszlast kiszamoljuk, ami azoknak az IP
+cimeknek (string pozicioknak) a szama, ahol az IP cimhez a FIB-ben pont x a
+next-hop, a RIB-ben meg y, osztva az osszes IP cim szamaval (2^32). ez egy
+egyuttes eloszlas. legyenek a hataroloszlasai p(x) es p(y).
+
+3. felteteles entropia szamitasa:
+https://en.wikipedia.org/wiki/Conditional_entropy
+
+H(Y|X) = \sum_{x\in X} p(x) H(Y|X=x) = -\sum_{x\in X} p(x) \sum_{y\in Y}
+p(y|x) \log p(y|x) = -\sum_{x\in X} p(x) \sum_{y\in Y} p(y|x) \log
+\frac{p(x,y)}{p(x)}
+
+ide masold be, es megmutatja a kepletet:
+
+http://asciimath.org
+
+ezen kivul kell meg az X entropia:
+
+H(X) = \sum_{x\in X} p(x) \log (1/p(x))
+
+4. kolcsonos informacio szamitasa:
+https://en.wikipedia.org/wiki/Mutual_information
+
+ennek a meghatarozasa:
+
+Intuitively, mutual information measures the information that X and Y share:
+It measures how much knowing one of these variables reduces uncertainty about
+the other.
+
+nekunk meg pont ez kell: tudva a RIB next-hopjait (p(y)) mennyit tudunk a FIB
+next-hopjairol (p(x)).
+
+
+####################################################################################
+
+
+
 cel:
 1. a FIB-ek statisztikainak megertese: miben ternek el a routeviews-rol letoltott RIBek es a valos routerek FIBjeinek statsztikai (prefix szinten azt
     gondljuk keves az elteres, next-hop szinten a RIB abszolut mas eloszlast mutat) + FIB generator modell (routeviews RIB-prefixei + valami local route-ok
