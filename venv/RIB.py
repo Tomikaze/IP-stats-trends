@@ -10,15 +10,17 @@ otthoni
 	cd /mnt/d/Users/Baki/Documents/GitHub/IP-stats-trends/venv
 	/mnt/e/2019/
 	E:/2019/
+	/mnt/d/x/rib/
+	D:/x/rib
 
 '''
 # https://manpages.debian.org/testing/bgpdump/bgpdump.1.en.html
 # bgpdump rib.20190101.0000.bz2 -O 20190101.txt
 
-location = '/mnt/'  # /mnt/c/teszt/rib/ C:/teszt/rib/
-bz2_dir = 'rib_linx/'
-txt_dir = 'rib_linx_txt/'
-fib_dir = 'rib_linx_fib_format/'
+location = '/mnt/d/x/'  # /mnt/c/teszt/rib/ C:/teszt/rib/
+bz2_dir = 'rib/'
+txt_dir = 'rib_txt/'
+fib_dir = 'rib_fib_format/'
 
 file = 'rib_20131101.txt'  # rib_20131101.txt  rib.20131101.0000.bz2
 rib_list = []
@@ -100,6 +102,7 @@ if __name__ == "__main__":
 		for file in files:
 			if 'bz2' in file:
 				rib_list.append(file)
+	print(rib_list)
 
 	bz2_count = len(rib_list)
 	bz2_current = 0

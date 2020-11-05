@@ -133,8 +133,8 @@ def maxDepth(root):
 def make_LRE(root,list):
 	if root:
 		if root.word_finished:
-			print(root.word+":"+str(root.depth))
-			list_element=[root.word,str(2**(8-root.depth+1))]
+			# print(root.word+":"+str(root.depth))
+			list_element=[root.word,str(2**(8-root.depth))]
 			list.append(list_element)
 
 		for child in root.children:

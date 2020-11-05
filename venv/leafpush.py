@@ -3,7 +3,7 @@ import tarfile  # tar unzip
 import re  # regex
 import datetime
 from datetime import date
-from prefixtree import TrieNode, add, sum_level, count_first_letter, leafpush, printPreorder,maxDepth, make_LRE
+from prefixtree import TrieNode, add, sum_level, count_first_letter, leafpush, printPreorder, maxDepth, make_LRE
 from multiprocessing import Pool, Lock
 import time
 import copy
@@ -11,16 +11,12 @@ import copy
 all = ['2013/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
 location = '/mnt/rib_linx_fib_format/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/
 rib_save_loc = '/mnt/'  # /mnt/   F:/
-
 workFiles = []
-
 storeList = []
+today = datetime.date.today().strftime("%y-%m-%d")
 
-vh1 = "^hbone_vh1"
-vh2 = "^hbone_vh2"
-bme = "^hbone_bme"
-szeged = "^hbone_szeged"
-rib = "_rib_"
+rle_name='D:/x/rle/' + 'szeged'+'_lre' + '_' + str(today) + '.txt'
+fib_name="D:/x/hbone_szeged_2014_02_01_23_59_59.txt"
 
 
 class Save:
@@ -154,53 +150,79 @@ class Ip:
 if __name__ == "__main__":
 	count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	root = TrieNode('*')
-	prelist = [
-		"00",
-		"10",
-		"000",
-		"010",
-		"011",
-		"100",
-		"101",
-		"110",
-		"111",
-		"0010",
-		"0011",
-		"0100",
-		"0101",
-		"0110",
-		"1010",
-		"1011",
-		"1111",
-		"00101",
-		"00110",
-		"00111",
-		"01000",
-		"11000",
-		"11001",
-		"11111",
-		"001011",
-		"110001",
-		"110010",
-		"0010111"]
 
-	# with open("D:/x/act.txt") as fp:
-	# 	for line in fp:
-	# 		add(root,line)
+	# prelist = [
+	# 	"00",
+	# 	"10",
+	# 	"000",
+	# 	"010",
+	# 	"011",
+	# 	"100",
+	# 	"101",
+	# 	"110",
+	# 	"111",
+	# 	"0010",
+	# 	"0011",
+	# 	"0100",
+	# 	"0101",
+	# 	"0110",
+	# 	"1010",
+	# 	"1011",
+	# 	"1111",
+	# 	"00101",
+	# 	"00110",
+	# 	"00111",
+	# 	"01000",
+	# 	"11000",
+	# 	"11001",
+	# 	"11111",
+	# 	"001011",
+	# 	"110001",
+	# 	"110010",
+	# 	"0010111"]
+	# i=0
+	# for pr in prelist:
+	#
+	# 	add(root, pr,str(i))
+	# 	i += 1
+	# root.display()
+	# leafpush(root)
+	# root.display()
+	# printPreorder(root)
+	# lre = []
+	# make_LRE(root, lre)
+	# print(lre)
 
-	i=0
-	for pr in prelist:
+	print("file read start:" + str(datetime.datetime.now()))
+	with open(fib_name) as fp:
+		for line in fp:
+			pr_bin = ""
+			tmp = line.split("\t")
+			tmp2 = tmp[0].split("/")
+			prefix = tmp2[0].split(".")
+			for i in prefix:
+				pr_bin += bin(int(i))[2:].zfill(8)
+			add(root, pr_bin, tmp[1])
 
-		add(root, pr,str(i))
-		i += 1
+	print("file read end:"+ str(datetime.datetime.now()))
 
 
-	root.display()
+	# root.display()
+	print("leafpush start:"+ str(datetime.datetime.now()))
 	leafpush(root)
-	root.display()
+	print("leafpush end" + str(datetime.datetime.now()))
+
+	# root.display()
 	# printPreorder(root)
 
 	print('------------')
-	lre=[]
-	print(make_LRE(root,lre))
-	print(lre)
+	print("RLE start" + str(datetime.datetime.now()))
+	lre = []
+	make_LRE(root, lre)
+	print("RLE end" + str(datetime.datetime.now()))
+
+	file_name = rle_name
+
+	with open(file_name, 'a+') as f:
+		for i in lre:
+			f.write(str(i)+'\n')

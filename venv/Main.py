@@ -431,6 +431,21 @@ if __name__ == "__main__":
 		pool.close()
 		pool.join()
 
+	if cmd == 'rib_to_fib':
+		for date in all:
+			for root, dirs, files in os.walk(location + date):
+				for file in files:
+					if file.split('.')[-1] == 'xz':
+						workFiles.append(root + '/' + file)
+						print(file)
+
+		l = Lock()
+		pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
+		# pool = Pool(initializer = init, initargs = (l,), processes = 1)
+		result = pool.map(mp_work_single, workFiles)
+		pool.close()
+		pool.join()
+
 	if cmd == 'rib':
 		for root, dirs, files in os.walk(location):
 			for file in files:
