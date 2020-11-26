@@ -95,7 +95,7 @@ def leafpush(root):
 			new_node = TrieNode(char)
 			new_node.word_finished = True
 			new_node.nexthop=node.nexthop
-			new_node.word=node.word
+			new_node.word=node.word+new_node.char
 			new_node.depth=node.depth+1
 			node.children.append(new_node)
 			node.word_finished = False
@@ -130,15 +130,16 @@ def maxDepth(root):
 		return Depth +1
 
 
-def make_LRE(root,list):
+def make_pushed_list(root,list):
 	if root:
 		if root.word_finished:
 			# print(root.word+":"+str(root.depth))
-			list_element=[root.word,str(2**(8-root.depth))]
+			range=str(2**(32-root.depth))
+			list_element=[root.word,range,root.nexthop]
 			list.append(list_element)
 
 		for child in root.children:
-			make_LRE(child,list)
+			make_pushed_list(child,list)
 
 
 

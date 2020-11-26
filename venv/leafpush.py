@@ -3,20 +3,17 @@ import tarfile  # tar unzip
 import re  # regex
 import datetime
 from datetime import date
-from prefixtree import TrieNode, add, sum_level, count_first_letter, leafpush, printPreorder, maxDepth, make_LRE
+from prefixtree import TrieNode, add, sum_level, count_first_letter, leafpush, printPreorder, maxDepth, make_pushed_list
 from multiprocessing import Pool, Lock
 import time
 import copy
+from operator import itemgetter
 
-all = ['2013/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = '/mnt/rib_linx_fib_format/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/
-rib_save_loc = '/mnt/'  # /mnt/   F:/
+location = 'D:/TomiKJ/x'
+fib_location= 'D:/TomiKJ/x/fib_format'
 workFiles = []
 storeList = []
 today = datetime.date.today().strftime("%y-%m-%d")
-
-rle_name='D:/x/rle/' + 'szeged'+'_lre' + '_' + str(today) + '.txt'
-fib_name="D:/x/hbone_szeged_2014_02_01_23_59_59.txt"
 
 
 class Save:
@@ -189,40 +186,89 @@ if __name__ == "__main__":
 	# leafpush(root)
 	# root.display()
 	# printPreorder(root)
-	# lre = []
-	# make_LRE(root, lre)
-	# print(lre)
+	# pushed_list = []
+	# make_pushed_list(root, pushed_list)
+	# print(pushed_list)
 
-	print("file read start:" + str(datetime.datetime.now()))
-	with open(fib_name) as fp:
-		for line in fp:
-			pr_bin = ""
-			tmp = line.split("\t")
-			tmp2 = tmp[0].split("/")
-			prefix = tmp2[0].split(".")
-			for i in prefix:
-				pr_bin += bin(int(i))[2:].zfill(8)
-			add(root, pr_bin, tmp[1])
+	for roots, dirs, files in os.walk(fib_location):
+		for file in files:
+			print(file)
+			start_time = datetime.datetime.now()
+			print("file read start: " + str(start_time))
+			with open(fib_location +"/"+ file) as fp:
+				for line in fp:
+					pr_bin = ""
+					tmp = line.split("\t")
+					tmp2 = tmp[0].split("/")
+					pre_len = tmp2[1]
+					prefix = tmp2[0].split(".")
+					for i in prefix:
+						pr_bin += bin(int(i))[2:].zfill(8)
+					pr_bin = pr_bin[0:int(pre_len)]
+					add(root, pr_bin, tmp[1].strip())
 
-	print("file read end:"+ str(datetime.datetime.now()))
+			print("file read end:" + str(datetime.datetime.now()))
 
+			# root.display()
+			print("leafpush start:" + str(datetime.datetime.now()))
+			leafpush(root)
+			print("leafpush end" + str(datetime.datetime.now()))
 
-	# root.display()
-	print("leafpush start:"+ str(datetime.datetime.now()))
-	leafpush(root)
-	print("leafpush end" + str(datetime.datetime.now()))
+			# root.display()
+			# printPreorder(root)
 
-	# root.display()
-	# printPreorder(root)
+			print('------------')
+			print("push list start" + str(datetime.datetime.now()))
+			pushed_list = []
+			make_pushed_list(root, pushed_list)
+			print("push list end" + str(datetime.datetime.now()))
+			# print(pushed_list)
 
-	print('------------')
-	print("RLE start" + str(datetime.datetime.now()))
-	lre = []
-	make_LRE(root, lre)
-	print("RLE end" + str(datetime.datetime.now()))
+			ordered = sorted(pushed_list, key = itemgetter(0))
 
-	file_name = rle_name
+			push_list_name = location + '/lp_list/' + file.split(".")[0] + '_pushed_list' + '_' + str(today) + '.txt'
 
-	with open(file_name, 'a+') as f:
-		for i in lre:
-			f.write(str(i)+'\n')
+			with open(push_list_name, 'w+') as f:
+				for i in ordered:
+					f.write(str(i) + '\n')
+
+			# printPreorder(root)
+			print('------------')
+			print("RLE start" + str(datetime.datetime.now()))
+			rle = []
+			pre_end = 0
+			pre_nh = "*"
+			for i in ordered:
+				full_bin = i[0].ljust(32, "0")
+				full_range = str(bin(int(i[1], 10)))[2:].rjust(32, "0")
+				cur_start = int(full_bin, 2)
+				cur_end = int(i[0].ljust(32, "0"), 2) + int(i[1], 10)
+				range = str(bin(int(i[1], 10)))[2:].rjust(32, "0")
+				# print(cur_start)
+				# print(full_bin)
+				# print(range)
+				# print(cur_end)
+				if pre_end == cur_start:
+					list_element = [i[2], int(i[1])]
+					rle.append(list_element)
+					pre_end = cur_end
+				else:
+					gap = cur_start - pre_end
+					list_element = ["*", gap]
+					rle.append(list_element)
+					list_element = [i[2], int(i[1])]
+					rle.append(list_element)
+					pre_end = cur_end
+
+			last = 2 ** 32
+			gap = last - pre_end
+			list_element = ["*", gap]
+			rle.append(list_element)
+
+			rle_name = location +"/rle/"+ file.split(".")[0] + '_rle' + '_V1_' + str(today) + '.txt'
+			with open(rle_name, 'w+') as f:
+				for i in rle:
+					f.write(str(i) + '\n')
+
+			print("RLE end " + str(datetime.datetime.now()))
+			print("delta " + str(datetime.datetime.now() - start_time))
