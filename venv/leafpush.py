@@ -9,8 +9,8 @@ import time
 import copy
 from operator import itemgetter
 
-location = 'D:/TomiKJ/x'
-fib_location= 'D:/TomiKJ/x/fib_format'
+location = 'D:/x'
+fib_location= 'D:/x/fib_format'
 workFiles = []
 storeList = []
 today = datetime.date.today().strftime("%y-%m-%d")
@@ -147,6 +147,7 @@ class Ip:
 if __name__ == "__main__":
 	count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	root = TrieNode('*')
+	print("start")
 
 	# prelist = [
 	# 	"00",
@@ -194,6 +195,7 @@ if __name__ == "__main__":
 		for file in files:
 			print(file)
 			start_time = datetime.datetime.now()
+			root = TrieNode('*')
 			print("file read start: " + str(start_time))
 			with open(fib_location +"/"+ file) as fp:
 				for line in fp:
@@ -237,7 +239,7 @@ if __name__ == "__main__":
 			print("RLE start" + str(datetime.datetime.now()))
 			rle = []
 			pre_end = 0
-			pre_nh = "*"
+			pre_nh = "0"
 			for i in ordered:
 				full_bin = i[0].ljust(32, "0")
 				full_range = str(bin(int(i[1], 10)))[2:].rjust(32, "0")
@@ -254,7 +256,7 @@ if __name__ == "__main__":
 					pre_end = cur_end
 				else:
 					gap = cur_start - pre_end
-					list_element = ["*", gap]
+					list_element = ["0", gap]
 					rle.append(list_element)
 					list_element = [i[2], int(i[1])]
 					rle.append(list_element)
@@ -262,10 +264,10 @@ if __name__ == "__main__":
 
 			last = 2 ** 32
 			gap = last - pre_end
-			list_element = ["*", gap]
+			list_element = ["0", gap]
 			rle.append(list_element)
 
-			rle_name = location +"/rle/"+ file.split(".")[0] + '_rle' + '_V1_' + str(today) + '.txt'
+			rle_name = location +"/rle/"+ file.split(".")[0] + '_rle' + '_V2_' + str(today) + '.txt'
 			with open(rle_name, 'w+') as f:
 				for i in rle:
 					f.write(str(i) + '\n')
