@@ -12,8 +12,8 @@ import numpy as np
 import math
 from typing import Any
 
-out_location = 'D:/x/compare/'
-rle_location = 'D:/x/rle/'
+out_location = 'D:/TomiKJ/x/compare/'
+rle_location = 'D:/TomiKJ/x/rle/'
 two32 = 2 ** 32
 today = datetime.date.today().strftime("%y-%m-%d")
 
@@ -139,7 +139,6 @@ if __name__ == "__main__":
 		pd = []
 		pa = []
 
-
 		for i in range(len(a_nh)):
 			pdi = 0
 			pi = 0
@@ -152,7 +151,7 @@ if __name__ == "__main__":
 			pa.append(pi)
 		# print("darab: " + str(pd))
 		# print("darab/2**32: " + str(p))
-		ha = []      # entropia lista
+		ha = []  # entropia lista
 		for i in range(0, len(pa)):
 			ha.append(-1 * pa[i] * math.log2(pa[i]))
 		# print(str(-1 * p[i] * math.log2(p[i])))
@@ -195,24 +194,23 @@ if __name__ == "__main__":
 		# Hnb = sum(hb)
 		# print("0. elem nélküli Entropia H: " + str(Hnb))
 
-
-
-		print('perem eloszlás')
-		for i in range(10):
-			print(ha[i],hb[i])
-
-		print('entrópia')
-		print(name_a,Ha, str(math.log2(len(a_nh))))
-		print(name_b,Hb, str(math.log2(len(b_nh))))
-
-		print('feltételes entrópia')
-		HAB=0
+		# print('perem eloszlás')
+		# for i in range(10):
+		# 	print(ha[i], hb[i])
+		#
+		# print('entrópia')
+		# print(name_a, Ha, str(math.log2(len(a_nh))))
+		# print(name_b, Hb, str(math.log2(len(b_nh))))
+		#
+		# print('feltételes entrópia')
+		HAB = 0
 		for j in range(len(b_nh)):
 			for i in range(len(a_nh)):
-				log=cn[i][j]*pb[j]
+				log = cn[i][j] / pb[j]
 				# print(log)
-				if log!=0:
-					HAB+=-1*cn[i][j]*math.log2(log)
+				if log != 0:
+					HAB += -1 * cn[i][j] * math.log2(log)
 
-		print(HAB)
-		break
+		# print(name_a,name_b,HAB)
+		print(name_a,name_b,Ha-HAB)
+		# break
