@@ -12,20 +12,29 @@ import numpy as np
 import math
 from typing import Any
 
-out_location = 'D:/TomiKJ/x/teszt_compare/'
-rle_location = 'D:/TomiKJ/x/rle/'
+out_location = 'D:/x/compare/'
+rle_location = 'D:/x/rle/'
 two32 = 2 ** 32
 today = datetime.date.today().strftime("%y-%m-%d")
 
 if __name__ == "__main__":
+	a_files = []
+	b_files = []
 	for root, dirs, files in os.walk(rle_location):
 		for file in files:
-			print(file)
-
+			if "bme" in file or "szeged" in file or "vh1" in file or "vh2" in file:
+				a_files.append(file)
+			else:
+				b_files.append(file)
+	files = []
+	files.append(a_files)
+	files.append(b_files)
 	'''
 	Összes kombináció megadása
 	'''
-	for a, b in itertools.combinations(files, 2):
+	for e in itertools.product(*files):
+		a = e[0]
+		b = e[1]
 		a_lst = []
 		b_lst = []
 		a_nh = []
@@ -33,9 +42,9 @@ if __name__ == "__main__":
 		name_a = a.split("_")[0]
 		name_b = b.split("_")[0]
 		out_name = name_a + "_" + name_b + "_" + today + ".txt"
-		print(name_a, name_b)
+		# print(name_a, name_b)
 
-		''' első file beolvasása tömb be'''
+		''' FIB file beolvasása tömb be'''
 		with open(rle_location + a) as fpa:
 			for line in fpa:  # ['0', 768]
 				nh = line.split("\'")[1]
@@ -48,12 +57,12 @@ if __name__ == "__main__":
 				element = [nh_i, int(count)]
 				a_lst.append(element)
 		fpa.close()
-		''' első nexthopok kiírása'''
+		''' FIB nexthopok kiírása'''
 		with open(out_location + name_a + "_nexthops.txt", 'w+') as f:
 			for i in a_nh:
 				f.write(str(i) + '\n')
 		f.close()
-		''' második file beolvasása tömb be'''
+		''' RIB file beolvasása tömb be'''
 		with open(rle_location + b) as fpb:
 			for line in fpb:  # ['0', 768]
 				nh = line.split("\'")[1]
@@ -66,13 +75,13 @@ if __name__ == "__main__":
 				element = [nh_i, int(count)]
 				b_lst.append(element)
 		fpb.close()
-		''' második file beolvasása tömb be'''
+		''' RIB file beolvasása tömb be'''
 		with open(out_location + name_b + "_nexthops.txt", 'w+') as f:
 			for i in b_nh:
 				f.write(str(i) + '\n')
 		f.close()
 
-		''' elsőxmasodik as mátrix'''
+		''' FIBxRIB as mátrix'''
 		c = np.zeros([a_nh.__len__(), b_nh.__len__()])
 		# print(c[80][110])
 
@@ -116,7 +125,7 @@ if __name__ == "__main__":
 		# print("i: "+str(i)+"\tj: "+str(j))
 
 		''' a konkrét darabos mx kiírása '''
-		np.savetxt(out_location + "darab_mx_" + out_name, c, fmt = '%d', delimiter = '\t')
+		np.savetxt(out_location + name_a + "_" + name_b + "_" + "darab_mx_" + today + ".txt", c, fmt = '%d', delimiter = '\t')
 
 		''' leosztom 2**32 vel és annak a kiírása '''
 		cn = np.zeros([a_nh.__len__(), b_nh.__len__()])
@@ -124,11 +133,12 @@ if __name__ == "__main__":
 			for j in range(len(b_nh)):
 				cn[i][j] = c[i][j] / two32
 		# %d   %10.11f
-		np.savetxt(out_location + "norm_mx_" + out_name, cn, fmt = '%10.15f', delimiter = '\t')
+		np.savetxt(out_location + name_a + "_" + name_b + "_" + "norm_mx_" + today + ".txt", cn, fmt = '%10.15f', delimiter = '\t')
 
-		'''a file'''
+		'''FIB stat file'''
 		pd = []
-		p = []
+		pa = []
+
 
 		for i in range(len(a_nh)):
 			pdi = 0
@@ -139,27 +149,26 @@ if __name__ == "__main__":
 			# print (c[i][j])
 			# print("-----------")
 			pd.append(pdi)
-			p.append(pi)
-		print("darab: " + str(pd))
-		print("darab/2**32: " + str(p))
-		h = []
+			pa.append(pi)
+		# print("darab: " + str(pd))
+		# print("darab/2**32: " + str(p))
+		ha = []      # entropia lista
+		for i in range(0, len(pa)):
+			ha.append(-1 * pa[i] * math.log2(pa[i]))
+		# print(str(-1 * p[i] * math.log2(p[i])))
+		# print("egy forrás entropiája -pi*log2(pi): " + str(h))
+		# print("log2 n max H érték: " + str(math.log2(len(a_nh))))
+		Ha = sum(ha)
+		# print(" 0. elememel Entropia H: " + str(Ha))
+		# hna = []
+		# for i in range(1, len(p)):
+		# 	hna.append(-1 * p[i] * math.log2(p[i]))
+		# Hna= sum(hna)
+		# print("0. elem nélküli Entropia H: " + str(Ha))
 
-		for i in range(0, len(p)):
-			h.append(-1 * p[i] * math.log2(p[i]))
-			# print(str(-1 * p[i] * math.log2(p[i])))
-		print("egy forrás entropiája -pi*log2(pi): " + str(h))
-		print("log2 n max H érték: " + str(math.log2(len(a_nh))))
-		H = sum(h)
-		print(" 0. elememel Entropia H: " + str(H))
-		h = []
-		for i in range(1, len(p)):
-			h.append(-1 * p[i] * math.log2(p[i]))
-		H = sum(h)
-		print("0. elem nélküli Entropia H: " + str(H))
-
-		'''b file'''
+		'''RIB stat file'''
 		pd = []
-		p = []
+		pb = []
 		for i in range(len(b_nh)):
 			pdi = 0
 			pi = 0
@@ -169,23 +178,41 @@ if __name__ == "__main__":
 			# print (c[i][j])
 			# print("-----------")
 			pd.append(pdi)
-			p.append(pi)
-		print("darab: " + str(pd))
-		print("darab/2**32: " + str(p))
-		h = []
-		for i in range(0, len(p)):
-			h.append(-1 * p[i] * math.log2(p[i]))
-			# print(str(-1 * p[i] * math.log2(p[i])))
-		print("egy forrás entropiája -pi*log2(pi): " + str(h))
-		print("log2 n max H érték: " + str(math.log2(len(a_nh))))
-		H = sum(h)
-		print(" 0. elememel Entropia H: " + str(H))
-		h = []
-		for i in range(1, len(p)):
-			h.append(-1 * p[i] * math.log2(p[i]))
-		H = sum(h)
-		print("0. elem nélküli Entropia H: " + str(H))
+			pb.append(pi)
+		# print("darab: " + str(pd))
+		# print("darab/2**32: " + str(p))
+		hb = []
+		for i in range(0, len(pb)):
+			hb.append(-1 * pb[i] * math.log2(pb[i]))
+		# print(str(-1 * p[i] * math.log2(p[i])))
+		# print("egy forrás entropiája -pi*log2(pi): " + str(h))
+		# print("log2 n max H érték: " + str(math.log2(len(a_nh))))
+		Hb = sum(hb)
+		# print(" 0. elememel Entropia H: " + str(Hb))
+		# hnb = []
+		# for i in range(1, len(p)):
+		# 	hnb.append(-1 * p[i] * math.log2(p[i]))
+		# Hnb = sum(hb)
+		# print("0. elem nélküli Entropia H: " + str(Hnb))
 
 
 
+		print('perem eloszlás')
+		for i in range(10):
+			print(ha[i],hb[i])
+
+		print('entrópia')
+		print(name_a,Ha, str(math.log2(len(a_nh))))
+		print(name_b,Hb, str(math.log2(len(b_nh))))
+
+		print('feltételes entrópia')
+		HAB=0
+		for j in range(len(b_nh)):
+			for i in range(len(a_nh)):
+				log=cn[i][j]*pb[j]
+				# print(log)
+				if log!=0:
+					HAB+=-1*cn[i][j]*math.log2(log)
+
+		print(HAB)
 		break
