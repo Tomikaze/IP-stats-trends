@@ -61,7 +61,7 @@ def unify(filepath):
 def reformat_data_to_csv(filepath, file):
 	# 0	                    1	            2	    3	        4	    5	        6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	    21	    22	    23	    24	    25	    26	    27	    28	    29	    30	31	32	33	34	    35	36	37	38	        39	40	41	42	43	44	45	46	47	48	49	50	51	52	53	54	    55	    56	    57	    58	    59	    60	    61	    62	63	64	65	66	67	68	69	70	71	    72
 	# 2013_12_25_23_59_59	total_count:	477591	msp_sum:	45839	pref_count:	0	0	0	0	0	0	0	16	11	31	92	253	473	941	1642	12833	6777	11226	23102	33056	35728	50318	43995	251571	34	58	96	91	4444	408	151	243	msp_count:	0	0	0	0	0	0	0	15	9	21	65	145	265	547	765	4363	2483	3864	6052	7842	6831	7164	5328	13	4	1	4	0	58	0	0	0	per 8:	158.58484077453613
-	header = "Date:	Total_count	Msp_sum	Pref_1	Pref_2	Pref_3	Pref_4	Pref_5	Pref_6	Pref_7	Pref_8	Pref_9	Pref_10	Pref_11	Pref_12	Pref_13	Pref_14	Pref_15	Pref_16	Pref_17	Pref_18	Pref_19	Pref_20	Pref_21	Pref_22	Pref_23	Pref_24	Pref_25	Pref_26	Pref_27	Pref_28	Pref_29	Pref_30	Pref_31	Pref_32	Msp_1	Msp_2	Msp_3	Msp_4	Msp_5	Msp_6	Msp_7	Msp_8	Msp_9	Msp_10	Msp_11	Msp_12	Msp_13	Msp_14	Msp_15	Msp_16	Msp_17	Msp_18	Msp_19	Msp_20	Msp_21	Msp_22	Msp_23	Msp_24	Msp_25	Msp_26	Msp_27	Msp_28	Msp_29	Msp_30	Msp_31	Msp_32	Per_8\n"
+	header = "Date	Total_count	Msp_sum	Pref_1	Pref_2	Pref_3	Pref_4	Pref_5	Pref_6	Pref_7	Pref_8	Pref_9	Pref_10	Pref_11	Pref_12	Pref_13	Pref_14	Pref_15	Pref_16	Pref_17	Pref_18	Pref_19	Pref_20	Pref_21	Pref_22	Pref_23	Pref_24	Pref_25	Pref_26	Pref_27	Pref_28	Pref_29	Pref_30	Pref_31	Pref_32	Msp_1	Msp_2	Msp_3	Msp_4	Msp_5	Msp_6	Msp_7	Msp_8	Msp_9	Msp_10	Msp_11	Msp_12	Msp_13	Msp_14	Msp_15	Msp_16	Msp_17	Msp_18	Msp_19	Msp_20	Msp_21	Msp_22	Msp_23	Msp_24	Msp_25	Msp_26	Msp_27	Msp_28	Msp_29	Msp_30	Msp_31	Msp_32	Per_8\n"
 	header_parts = header.split("\t")
 	header = ','.join(header_parts)
 	print(header)
@@ -74,6 +74,10 @@ def reformat_data_to_csv(filepath, file):
 		while line:
 			# print("Line {}: {}".format(cnt, line.strip()))
 			line_parts = line.split("\t")
+			date = line_parts[0]
+			print(date)
+			line_parts[0] = date[0] + date[1] + date[2] + date[3] + '-' + date[5] + date[6] + '-' + date[8] + date[9]
+			print(line_parts[0])
 			line_parts.remove("total_count:")
 			line_parts.remove("msp_sum:")
 			line_parts.remove("pref_count:")
@@ -281,33 +285,33 @@ def delete_outliers(filepath, file):
 	fp.close
 
 
-def delete_all_outliers(filepath, file):
-	out_list = []
-	storeList.clear()
-	with open(filepath + file) as fp:
-		header = fp.readline()
-		line = fp.readline()
-
-		while line:
-			if len(out_list) > 1:
-				act = line.split(",")
-				pre = out_list[-1].split(",")
-				for a, p in zip(act, pre):
-					if "-" not in a:
-						if float(a) < float(p) * 0.95:
-							print
-							# a = floor(float(p) * 0.95)
-
-						if float(a) > float(p) * 1.05:
-							# a = floor(float(p) * 1.05)
-
-						else:
-							out_list.append(line)
-			else:
-				out_list.append(line)
-			line = fp.readline()
-
-	fp.close()
+# def delete_all_outliers(filepath, file):
+# 	out_list = []
+# 	storeList.clear()
+# 	with open(filepath + file) as fp:
+# 		header = fp.readline()
+# 		line = fp.readline()
+#
+# 		while line:
+# 			if len(out_list) > 1:
+# 				act = line.split(",")
+# 				pre = out_list[-1].split(",")
+# 				for a, p in zip(act, pre):
+# 					if "-" not in a:
+# 						if float(a) < float(p) * 0.95:
+# 							print
+# 							# a = floor(float(p) * 0.95)
+#
+# 						if float(a) > float(p) * 1.05:
+# 							# a = floor(float(p) * 1.05)
+#
+# 						else:
+# 							out_list.append(line)
+# 			else:
+# 				out_list.append(line)
+# 			line = fp.readline()
+#
+# 	fp.close()
 
 
 # with open(filepath + '/a/' + file, "w") as fp:
@@ -327,21 +331,24 @@ full_date_list = []
 out_list = []
 
 if __name__ == "__main__":
-	source = "eqix"
-	ix = ['jinx', 'linx', 'eqix', 'sydney', 'bme', 'szeged', 'vh1', 'vh2']
-	location = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv'  # 'F:/Fib_done/RIB'
-	dest_loc = 'F:/Fib_done/'
-	dst_file = source + ".csv"
-
-	for root, dirs, files in os.walk(location):
-		for file in files:
-			if file.split('.')[-1] == 'csv':
-				for src in ix:
-					if src in file:
-						workFiles.append(root + '/' + file)
-						delete_all_outliers(root + '/', file)
-						print(file)
+	# source = "eqix"
+	# ix = ['jinx', 'linx', 'eqix', 'sydney', 'bme', 'szeged', 'vh1', 'vh2']
+	# location = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv'  # 'F:/Fib_done/RIB'
+	# dest_loc = 'F:/Fib_done/'
+	# dst_file = source + ".csv"
+	#
+	# for root, dirs, files in os.walk(location):
+	# 	for file in files:
+	# 		if file.split('.')[-1] == 'csv':
+	# 			for src in ix:
+	# 				if src in file:
+	# 					workFiles.append(root + '/' + file)
+	# 					delete_all_outliers(root + '/', file)
+	# 					print(file)
 # write_file(dest_loc, dst_file)
+
+	reformat_data_to_csv('D:/TomiKJ/orig/fib_data_archive/', '2019_save_bme_21-04-08.txt')
+
 
 # bme = pd.read_csv("F:/Fib_done/bme.csv", parse_dates = ["Date"], index_col = "Date")
 #

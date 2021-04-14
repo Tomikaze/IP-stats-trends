@@ -8,8 +8,8 @@ from multiprocessing import Pool, Lock
 import time
 import copy
 
-all = ['2013/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = '/mnt/rib_linx_fib_format/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/
+all = ['2019/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
+location = 'D:/TomiKJ/orig/fib_data_archive/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/     D:/TomiKJ/orig/fib_data_archive1
 rib_save_loc = '/mnt/'  # /mnt/   F:/
 
 workFiles = []
@@ -165,6 +165,7 @@ def unzip(wF):
 	proc = os.getpid()
 	start_time = datetime.datetime.now()
 	print('Unzipping {0}  by process id: {1} at: {2}'.format(wF, proc, start_time))
+	unzipLocation = wF.rsplit('/', 2)[0] + '_extract/'
 	un_zipped = False
 	tmp = wF.split("/")[3].split('.')[0].split('-')
 	k = tmp[0] + '_' + tmp[1] + '_' + tmp[2]
@@ -399,19 +400,19 @@ def mp_work_rib(file):
 
 
 if __name__ == "__main__":
-	print('start: just jump into it')
+	print('start: full process')
 	print('rib: work on rib')
-	print('1: unzip')
+	print('1: unzip')   #csak unzippeli a location helyen megadott összes filet és törli az azok közül fölöslegeseket
 	print('2: save more specific prefix')
 	print('3: multiprocess test')
 	print('4: lock test')
-	print('5: do test')
+	print('5: some test')
 	cmd = input('mi legyen?')
 	if cmd == '1':
 		for root, dirs, files in os.walk(location):
 			if files:
 				loc = root + '/' + ''.join(files)
-				# print(loc)
+				print(loc)
 				workFiles.append(loc)
 		pool = Pool(processes = os.cpu_count())
 		result = pool.map(unzip, workFiles)
