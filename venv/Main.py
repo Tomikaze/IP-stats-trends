@@ -361,7 +361,6 @@ def mp_work_rib(file):
 
 	wip = Save()
 	pre_tree_root = TrieNode('*')
-
 	wip.blank_sheet()
 	store_to_list(str(file), wip)
 

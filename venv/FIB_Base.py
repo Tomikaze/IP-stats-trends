@@ -8,8 +8,8 @@ from multiprocessing import Pool, Lock
 import time
 import copy
 
-all = ['2019/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = 'D:/TomiKJ/orig/fib_data_archive/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/     D:/TomiKJ/orig/fib_data_archive1
+all = ['eqix_rib_fib_format/', 'kixp_rib_fib_format/', 'linx_rib_fib_format/', 'sydney_rib_fib_format/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
+location = 'F:/new_rib/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/     D:/TomiKJ/orig/fib_data_archive1
 rib_save_loc = '/mnt/'  # /mnt/   F:/
 
 workFiles = []
@@ -64,10 +64,12 @@ class Save:
 	"""
 
 	def end_game(self, f):
-		save_loc = f.rsplit('_', 8)[0]
-		save_name = f.rsplit('_')[-7]
+		# save_loc = f.rsplit('_', 8)[0]
+		# save_name = f.rsplit('_')[-7]
+		# today = datetime.date.today().strftime("%y-%m-%d")
+		# file_name = save_loc + '_' + save_name + '_' + str(today) + '.csv'
 		today = datetime.date.today().strftime("%y-%m-%d")
-		file_name = save_loc + '_'+ save_name + '_' + str(today) + '.csv'
+		file_name = f + str(today) + '.csv'
 
 		with open(file_name, 'a+') as f:
 			# append header if empty
@@ -102,34 +104,38 @@ class Save:
 
 			f.close()
 
-	def rib_end_game(self, f):
+	def rib_to_csv(self, f):
 		today = datetime.date.today().strftime("%y-%m-%d")
-		file_name = rib_save_loc + '_save_' + f + '_' + str(today) + '.txt'
+		file_name = f + str(today) + '.csv'
 
 		with open(file_name, 'a+') as f:
-			# timestamp
-			f.write("\n" + str(self.time_stamp))
+			# append header if empty
+			if (os.stat(file_name).st_size == 0):
+				header = "Date	Total_count	Msp_sum	Pref_1	Pref_2	Pref_3	Pref_4	Pref_5	Pref_6	Pref_7	Pref_8	Pref_9	Pref_10	Pref_11	Pref_12	Pref_13	Pref_14	Pref_15	Pref_16	Pref_17	Pref_18	Pref_19	Pref_20	Pref_21	Pref_22	Pref_23	Pref_24	Pref_25	Pref_26	Pref_27	Pref_28	Pref_29	Pref_30	Pref_31	Pref_32	Msp_1	Msp_2	Msp_3	Msp_4	Msp_5	Msp_6	Msp_7	Msp_8	Msp_9	Msp_10	Msp_11	Msp_12	Msp_13	Msp_14	Msp_15	Msp_16	Msp_17	Msp_18	Msp_19	Msp_20	Msp_21	Msp_22	Msp_23	Msp_24	Msp_25	Msp_26	Msp_27	Msp_28	Msp_29	Msp_30	Msp_31	Msp_32	Per_8"
+				header_parts = header.split("\t")
+				header = ','.join(header_parts)
+				f.write(header)
 
-			# prefix count 1. diagram
-			f.write("\ttotal_count:")
-			f.write("\t" + str(self.count))
+			# timestamp
+			date = self.time_stamp[0] + self.time_stamp[1] + self.time_stamp[2] + self.time_stamp[3] + '-' + self.time_stamp[4] + self.time_stamp[5] + '-' + self.time_stamp[6] + self.time_stamp[7]
+			f.write("\n" + date)
+
+			# Total prefix count 1. diagram
+			f.write("," + str(self.count))
 
 			# sum more specific prefix count 2. diagram
-			f.write("\tmsp_sum:")
-			f.write("\t" + str(self.sum_msp))
+			f.write("," + str(self.sum_msp))
 
-			# prefix count 3. diagram
-			f.write("\tpref_count:")
+			# prefix count by length 3. diagram
 			for i in self.pref_count:
-				f.write("\t" + str(i))
+				f.write("," + str(i))
 
-			# more specific prefixes 4. diagram
-			f.write("\tmsp_count:")
+			# more specific prefix count by length 4. diagram
 			for i in self.msp_count:
-				f.write("\t" + str(i))
+				f.write("," + str(i))
 
 			# per 8 range 5. diagram
-			f.write("\tper 8:\t" + str(self.per8))
+			f.write("," + str(self.per8))
 
 			f.close()
 
@@ -244,7 +250,6 @@ def store_to_list(filepath, wip):  # első prefix tárolása
 	wip.count = cnt
 
 
-
 def mp_work_single(file):
 	proc = os.getpid()
 	start_time = datetime.datetime.now()
@@ -281,7 +286,6 @@ def mp_work_single(file):
 			for i in range(0, 32):
 				wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
 
-
 			lock.acquire()
 			wip.end_game(unzipLocation + file)
 			lock.release()
@@ -295,18 +299,72 @@ def mp_work_single(file):
 	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
 
 
+def mp_work_rib(file):
+	proc = os.getpid()
+	start_time = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} started file: {2}'.format(proc, start_time, file))
+
+	try:
+		wip = Save()
+		pre_tree_root = TrieNode('*')
+		wip.blank_sheet()
+		store_to_list(str(file), wip)
+
+		# get date from fib format file name 'F:/rib_linx_fib_format/sydney_rib_20131101.txt'
+		# wip.set_date(file)  # ^^^^^^^^
+		wip.time_stamp = file.split('_')[-1].split('.')[0]
+
+		start_tree_time = datetime.datetime.now()
+		for pr in storeList:
+			add(pre_tree_root, pr.bin[0:int(pr.prefix)])
+		end_tree_time = datetime.datetime.now()
+		print('Process ID: {0} \t at: {1} finished TREE: {2} in: {3}'.format(proc, end_tree_time, file, end_tree_time - start_tree_time))
+
+		for i in range(0, 32):
+			wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+		end_msp_count = datetime.datetime.now()
+		print('Process ID: {0} \t at: {1} finished counting msp: {2} in: {3}'.format(proc, end_msp_count, file, end_msp_count - end_tree_time))
+
+		wip.set_sum_msp()
+
+		count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+		count_first_letter(pre_tree_root, 0, count_p8)
+		for i in range(0, 32):
+			wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+		end_per8 = datetime.datetime.now()
+		print('Process ID: {0} \t at: {1} finished PER 8: {2} in: {3}'.format(proc, end_per8, file, end_per8 - end_msp_count))
+
+		lock.acquire()
+		# rib to csv gets the eqix from the directory name : 'F:/new_rib/eqix_rib_fib_format/eqix_rib_20190701.txt
+		#                                                                ^^^^
+		wip.rib_to_csv(file.split('fib')[0])
+		lock.release()
+
+		end_time = datetime.datetime.now()
+	except Exception as e:
+
+		log_mp_work_err(location, e, file)
+		print(e)
+		print(file)
+	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
 
 if __name__ == "__main__":
+	# for date in all:
+	# 	for root, dirs, files in os.walk(location + date):
+	# 		for file in files:
+	# 			if file.split('.')[-1] == 'xz':
+	# 				workFiles.append(root + '/' + file)
+	# 				print(file)
 	for date in all:
 		for root, dirs, files in os.walk(location + date):
 			for file in files:
-				if file.split('.')[-1] == 'xz':
-					workFiles.append(root + '/' + file)
-					print(file)
+				workFiles.append(root + file)
+				print(file)
 
 	l = Lock()
 	pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	# pool = Pool(initializer = init, initargs = (l,), processes = 1)
-	result = pool.map(mp_work_single, workFiles)
+	result = pool.map(mp_work_rib, workFiles)
 	pool.close()
 	pool.join()

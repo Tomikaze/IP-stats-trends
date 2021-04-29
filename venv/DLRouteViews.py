@@ -4,12 +4,13 @@ import os  # file műveletek
 import datetime
 from datetime import date
 
-ix = ['jinx', 'linx', 'sydney', 'eqix']  # linx  sydney  jinx  eqix
+ix = ['kixp']  # 'linx', 'sydney', 'eqix'
 
-# url = 'http://archive.routeviews.org/route-views.linx/bgpdata/2013.11/RIBS/rib.20131101.0000.bz2'
+# url = 'http://archive.routeviews.org/route-views.linx/bgpdata/2013.11/RIBS/rib.20131101.0000.bz2' #http://archive.routeviews.org/route-views.saopaulo/bgpdata/2020.12/RIBS/rib.20201201.0000.bz2
+#        http://archive.routeviews.org/route-views.kixp/bgpdata/2014.07/RIBS/rib.20140701.0000.bz2
 # file = 'F:/route views linx/rib.20131101.0000.bz2'
-# C:/teszt/DL_teszt/rib_    /mnt/rib_
-file_root_loc = '/mnt/rib_'
+# C:/teszt/DL_teszt/rib_    /mnt/rib_   F:/new rib
+file_root_loc = 'F:/new_rib/'
 dloadlist = []
 mo = ''
 da = ''
@@ -36,6 +37,7 @@ def dload(url):
 
 	file_name = url.split('/')[7]
 	current_ix = url.split('/')[3].split('.')[1]
+	print(file_name, current_ix, file_root_loc + current_ix + '/' + file_name)
 	try:
 		if not os.path.isfile(file_root_loc + current_ix + '/' + file_name):
 			with urllib.request.urlopen(url) as response, open(file_root_loc + current_ix + '/' + file_name, 'wb') as out_file:
@@ -51,10 +53,9 @@ def dload(url):
 
 if __name__ == "__main__":
 
-	for y in range(3, 10):
+	for y in range(13, 21):     #2013 tól 2021 ig
 		for m in range(1, 13):
-			if (y == 3 and (m == 11 or m == 12)) or (y == 9 and (
-					m == 1 or m == 2 or m == 3 or m == 4 or m == 5 or m == 6)) or y == 4 or y == 5 or y == 6 or y == 7 or y == 8:
+			if (y == 13 and m >= 11) or y >= 14:    #2013 ból csak 11., 12. hónap kell
 				for d in range(1, 32):
 
 					if m == 2 and d < 29:
@@ -68,7 +69,7 @@ if __name__ == "__main__":
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
 						for i in ix:
-							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/201' + str(y) + '.' + str(mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
+							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/20' + str(y) + '.' + str(mo) + '/RIBS/rib.20' + str(y) + str(mo) + str(da) + '.0000.bz2')
 					if (m == 4 or m == 6 or m == 9 or m == 11) and d < 31:
 						if m < 10:
 							mo = '0' + str(m)
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
 						for i in ix:
-							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/201' + str(y) + '.' + str(mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
+							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/20' + str(y) + '.' + str(mo) + '/RIBS/rib.20' + str(y) + str(mo) + str(da) + '.0000.bz2')
 					if m == 1 or m == 3 or m == 5 or m == 7 or m == 8 or m == 10 or m == 12:
 						if m < 10:
 							mo = '0' + str(m)
@@ -92,10 +93,11 @@ if __name__ == "__main__":
 							da = str(d)
 						print(str(y) + ' ' + str(mo) + ' ' + str(da))
 						for i in ix:
-							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/201' + str(y) + '.' + str(mo) + '/RIBS/rib.201' + str(y) + str(mo) + str(da) + '.0000.bz2')
+							dloadlist.append('http://archive.routeviews.org/route-views.' + i + '/bgpdata/20' + str(y) + '.' + str(mo) + '/RIBS/rib.20' + str(y) + str(mo) + str(da) + '.0000.bz2')
 
-	# print(dloadlist[2].split('/')[7])
+	# print(dloadlist)
 
+	l = Lock()
 	pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	result = pool.map(dload, dloadlist)
 	pool.close()
