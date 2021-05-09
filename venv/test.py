@@ -50,34 +50,61 @@ from typing import Any
 # 	lst.append(b)
 # print(lst)
 #
+#
+# out_location = 'D:/x/teszt_compare/'
+# rle_location = 'D:/x/rle/'
+# two32 = 2 ** 32
+# today = datetime.date.today().strftime("%y-%m-%d")
+#
+# a_files = []
+# b_files = []
+# for root, dirs, files in os.walk(rle_location):
+# 	for file in files:
+# 		if "bme" in file or "szeged" in file or "vh1" in file or "vh2" in file:
+# 			a_files.append(file)
+# 		else:
+# 			b_files.append(file)
+# files = []
+# files.append(a_files)
+# files.append(b_files)
+# '''
+# Összes kombináció megadása
+# '''
+# for e in itertools.product(*files):
+# 	a = e[0]
+# 	b = e[1]
+# 	a_lst = []
+# 	b_lst = []
+# 	a_nh = []
+# 	b_nh = []
+# 	name_a = a.split("_")[0]
+# 	name_b = b.split("_")[0]
+# 	out_name = name_a + "_" + name_b + "_" + today + ".txt"
+# 	print(name_a, name_b)
+import operator
 
-out_location = 'D:/x/teszt_compare/'
-rle_location = 'D:/x/rle/'
-two32 = 2 ** 32
-today = datetime.date.today().strftime("%y-%m-%d")
+workFiles=[]
+header=''
 
-a_files = []
-b_files = []
-for root, dirs, files in os.walk(rle_location):
+a='D:/TomiKJ/DIPTERV/CSV'
+
+for root, dirs, files in os.walk(a):
 	for file in files:
-		if "bme" in file or "szeged" in file or "vh1" in file or "vh2" in file:
-			a_files.append(file)
-		else:
-			b_files.append(file)
-files = []
-files.append(a_files)
-files.append(b_files)
-'''
-Összes kombináció megadása
-'''
-for e in itertools.product(*files):
-	a = e[0]
-	b = e[1]
-	a_lst = []
-	b_lst = []
-	a_nh = []
-	b_nh = []
-	name_a = a.split("_")[0]
-	name_b = b.split("_")[0]
-	out_name = name_a + "_" + name_b + "_" + today + ".txt"
-	print(name_a, name_b)
+		filename=root + '/' + file
+		print(filename)
+		storelist=[]
+with open(a+'/asd bme_21-05-07.csv_sorted.csv') as fp:
+	header = fp.readline()
+	line = fp.readline()
+	while line:
+		storelist.append(line)
+		line = fp.readline()
+fp.close()
+storelist.sort()
+with open(a+'/asd bme_21-05-07.csv_sorted_2.csv','w') as fp:
+	fp.write(header)
+	for listitem in storelist:
+		fp.write(listitem)
+fp.close()
+
+

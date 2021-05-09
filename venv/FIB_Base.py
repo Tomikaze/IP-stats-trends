@@ -8,8 +8,8 @@ from multiprocessing import Pool, Lock
 import time
 import copy
 
-all = ['eqix_rib_fib_format/', 'kixp_rib_fib_format/', 'linx_rib_fib_format/', 'sydney_rib_fib_format/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']
-location = 'F:/new_rib/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/     D:/TomiKJ/orig/fib_data_archive1
+all = ['bme']#['eqix_rib_fib_format/', 'kixp_rib_fib_format/', 'linx_rib_fib_format/', 'sydney_rib_fib_format/']  # '2014/', '2015/', '2016/', '2017/', '2018/', '2019/']     ,'szeged','vh1','vh2'
+location = 'G:/new_rib/FIB/'  # /mnt/fib_archive/     F:/fib_data_archive/    F:\rib_linx_fib_format/     /mnt/rib_linx_fib_format/     D:/TomiKJ/orig/fib_data_archive1
 rib_save_loc = '/mnt/'  # /mnt/   F:/
 
 workFiles = []
@@ -349,6 +349,133 @@ def mp_work_rib(file):
 		print(file)
 	print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
 
+	def mp_work_rib(file):
+		proc = os.getpid()
+		start_time = datetime.datetime.now()
+		print('Process ID: {0} \t at: {1} started file: {2}'.format(proc, start_time, file))
+
+		try:
+			wip = Save()
+			pre_tree_root = TrieNode('*')
+			wip.blank_sheet()
+			store_to_list(str(file), wip)
+
+			# get date from fib format file name 'F:/rib_linx_fib_format/sydney_rib_20131101.txt'
+			# wip.set_date(file)  # ^^^^^^^^
+			wip.time_stamp = file.split('_')[-1].split('.')[0]
+
+			start_tree_time = datetime.datetime.now()
+			for pr in storeList:
+				add(pre_tree_root, pr.bin[0:int(pr.prefix)])
+			end_tree_time = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished TREE: {2} in: {3}'.format(proc, end_tree_time, file, end_tree_time - start_tree_time))
+
+			for i in range(0, 32):
+				wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+			end_msp_count = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished counting msp: {2} in: {3}'.format(proc, end_msp_count, file, end_msp_count - end_tree_time))
+
+			wip.set_sum_msp()
+
+			count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+			count_first_letter(pre_tree_root, 0, count_p8)
+			for i in range(0, 32):
+				wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+			end_per8 = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished PER 8: {2} in: {3}'.format(proc, end_per8, file, end_per8 - end_msp_count))
+
+			lock.acquire()
+			# rib to csv gets the eqix from the directory name : 'F:/new_rib/eqix_rib_fib_format/eqix_rib_20190701.txt
+			#                                                                ^^^^
+			wip.rib_to_csv(file.split('fib')[0])
+			lock.release()
+
+			end_time = datetime.datetime.now()
+		except Exception as e:
+
+			log_mp_work_err(location, e, file)
+			print(e)
+			print(file)
+		print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
+
+
+def already_done(fib_file, save_files):
+	# G:/new_rib/FIB/bme/hbone_bme_2020_02_13_00_10_06.txt
+	# ez kell                      ^^^^^^^^^^^^^^^^^^^
+	search_key_list = fib_file.split('/')[-1].split('_')
+	search_key= search_key_list[2]+'-'+search_key_list[3]+'-'+search_key_list[4]
+	with open(save_files) as wsf:
+		line = wsf.readline()
+		while (line):
+			if search_key in line:
+				print(line)
+				return True
+			line = wsf.readline()
+	return False
+
+
+def mp_work_fib(file):
+	proc = os.getpid()
+	start_time = datetime.datetime.now()
+	print('Process ID: {0} \t at: {1} started file: {2}'.format(proc, start_time, file))
+	save_files = 'G:/new_rib/FIB/bme_21-05-07.csv'
+
+	# rib to csv gets the eqix from the directory name : 'G:/new_rib/FIB/szeged/hbone_szeged_2019_07_02_00_15_25.txt'
+	#                                                                ^^^^
+	csv_file=file.split('/hbone')[0]+'_'
+	print('csv file: ',csv_file)
+
+	# get date from fib format file name 'G:/new_rib/FIB/szeged/hbone_szeged_2019_07_02_00_15_25.txt'
+	# wip.set_date(file)  #                                                  ^^^^ ^^ ^^
+	time_stamp = file.split('/')[-1].split('.')[0].split('_')
+	wrk_date = time_stamp[2] + time_stamp[3] + time_stamp[4]
+	print('date: ',wrk_date )
+
+	if not \
+			already_done(file,save_files):
+		try:
+			wip = Save()
+			pre_tree_root = TrieNode('*')
+			wip.blank_sheet()
+			store_to_list(str(file), wip)
+
+			wip.time_stamp =wrk_date
+
+
+			start_tree_time = datetime.datetime.now()
+			for pr in storeList:
+				add(pre_tree_root, pr.bin[0:int(pr.prefix)])
+			end_tree_time = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished TREE: {2} in: {3}'.format(proc, end_tree_time, file, end_tree_time - start_tree_time))
+
+			for i in range(0, 32):
+				wip.msp_count[i - 1] = sum_level(pre_tree_root, i)
+			end_msp_count = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished counting msp: {2} in: {3}'.format(proc, end_msp_count, file, end_msp_count - end_tree_time))
+
+			wip.set_sum_msp()
+
+			count_p8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+			count_first_letter(pre_tree_root, 0, count_p8)
+			for i in range(0, 32):
+				wip.per8 += count_p8[i] * (1 / (2 ** (i - 7)))
+			end_per8 = datetime.datetime.now()
+			print('Process ID: {0} \t at: {1} finished PER 8: {2} in: {3}'.format(proc, end_per8, file, end_per8 - end_msp_count))
+
+			lock.acquire()
+			wip.rib_to_csv(csv_file)
+			lock.release()
+
+			end_time = datetime.datetime.now()
+		except Exception as e:
+
+			log_mp_work_err(location, e, file)
+			print(e)
+			print(file)
+		print('Process ID: {0} \t at: {1} finished file: {2} in: {3}'.format(proc, end_time, file, end_time - start_time))
+
 if __name__ == "__main__":
 	# for date in all:
 	# 	for root, dirs, files in os.walk(location + date):
@@ -359,12 +486,12 @@ if __name__ == "__main__":
 	for date in all:
 		for root, dirs, files in os.walk(location + date):
 			for file in files:
-				workFiles.append(root + file)
+				workFiles.append(root +'/'+ file)
 				print(file)
 
 	l = Lock()
 	pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
 	# pool = Pool(initializer = init, initargs = (l,), processes = 1)
-	result = pool.map(mp_work_rib, workFiles)
+	result = pool.map(mp_work_fib, workFiles)
 	pool.close()
 	pool.join()
