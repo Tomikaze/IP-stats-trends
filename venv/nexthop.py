@@ -68,7 +68,8 @@ def store_to_list(filepath):  # első prefix tárolása
 			tmp2 = tmp[0].split("/")
 
 			p = Ip(tmp2[0], tmp2[1], tmp[1].strip())
-			p.time_stamp = filepath.split("_")[2] + "-" + filepath.split("_")[3] + "-" + filepath.split("_")[4]
+			mydate= filepath.split("_")[-1].split('.')[0]
+			p.time_stamp = mydate[0]+mydate[1]+mydate[2]+mydate[3]+'-'+mydate[4]+mydate[5]+'-'+mydate[6]+mydate[7]
 
 			lst.append(p)
 			cnt += 1
@@ -99,7 +100,7 @@ if __name__ == "__main__":
 	# for filepath in workFiles:
 	# 	store_to_list(filepath, workList)
 
-	workList = store_to_list("C:/o/hbone_bme_2019_06_30_00_10_07.txt")
+	workList = store_to_list("F:/cha6/in/bme_fib_20191101.txt")
 
 	for item in workList:
 		if item.nh not in hops:

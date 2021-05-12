@@ -12,8 +12,8 @@ import numpy as np
 import math
 from typing import Any
 
-out_location = 'D:/TomiKJ/x/compare/'
-rle_location = 'D:/TomiKJ/x/rle/'
+out_location = 'F:/cha6/compare_2020/'
+rle_location = 'F:/cha6/rle_2020/'
 two32 = 2 ** 32
 today = datetime.date.today().strftime("%y-%m-%d")
 
@@ -48,14 +48,15 @@ if __name__ == "__main__":
 		with open(rle_location + a) as fpa:
 			for line in fpa:  # ['0', 768]
 				nh = line.split("\'")[1]
-				count = line[:-2].split(" ")[1]
-				if nh in a_nh:
-					nh_i = a_nh.index(nh)
-				else:
-					a_nh.append(nh)
-					nh_i = a_nh.index(nh)
-				element = [nh_i, int(count)]
-				a_lst.append(element)
+				if  nh !='0':
+					count = line[:-2].split(" ")[1]
+					if nh in a_nh:
+						nh_i = a_nh.index(nh)
+					else:
+						a_nh.append(nh)
+						nh_i = a_nh.index(nh)
+					element = [nh_i, int(count)]
+					a_lst.append(element)
 		fpa.close()
 		''' FIB nexthopok kiírása'''
 		with open(out_location + name_a + "_nexthops.txt", 'w+') as f:
@@ -66,14 +67,15 @@ if __name__ == "__main__":
 		with open(rle_location + b) as fpb:
 			for line in fpb:  # ['0', 768]
 				nh = line.split("\'")[1]
-				count = line[:-2].split(" ")[1]
-				if nh in b_nh:
-					nh_i = b_nh.index(nh)
-				else:
-					b_nh.append(nh)
-					nh_i = b_nh.index(nh)
-				element = [nh_i, int(count)]
-				b_lst.append(element)
+				if nh != '0':
+					count = line[:-2].split(" ")[1]
+					if nh in b_nh:
+						nh_i = b_nh.index(nh)
+					else:
+						b_nh.append(nh)
+						nh_i = b_nh.index(nh)
+					element = [nh_i, int(count)]
+					b_lst.append(element)
 		fpb.close()
 		''' RIB file beolvasása tömb be'''
 		with open(out_location + name_b + "_nexthops.txt", 'w+') as f:
@@ -85,7 +87,7 @@ if __name__ == "__main__":
 		c = np.zeros([a_nh.__len__(), b_nh.__len__()])
 		# print(c[80][110])
 
-		''' konkrét black magic
+		''' 
 		ha egyenlő akkor
 		a mx a[i] b[i] eleméhez hozzá adja a lefedett prefix darabot
 		  ha van hova növel mind2 listán
@@ -95,6 +97,8 @@ if __name__ == "__main__":
 		a mx a[i] b[i] eleméhez hozzá adja a kisebb prefix darabot
 		  növeli a kisebbet ha van hova
 		'''
+
+
 		i = 0
 		j = 0
 		while (True):
@@ -194,13 +198,14 @@ if __name__ == "__main__":
 		# Hnb = sum(hb)
 		# print("0. elem nélküli Entropia H: " + str(Hnb))
 
-		# print('perem eloszlás')
-		# for i in range(10):
-		# 	print(ha[i], hb[i])
+		# 10 leggyakoribb nexhop cím valószínűsége
+		print('perem eloszlás', name_a, name_b)
+		for i in range(10):
+			print(ha[i], hb[i])
 		#
 		# print('entrópia')
-		# print(name_a, Ha, str(math.log2(len(a_nh))))
-		# print(name_b, Hb, str(math.log2(len(b_nh))))
+		print('entrópia', name_a, Ha, str(math.log2(len(a_nh))))
+		print('entrópia', name_b, Hb, str(math.log2(len(b_nh))))
 		#
 		# print('feltételes entrópia')
 		HAB = 0
@@ -212,5 +217,5 @@ if __name__ == "__main__":
 					HAB += -1 * cn[i][j] * math.log2(log)
 
 		# print(name_a,name_b,HAB)
-		print(name_a,name_b,Ha-HAB)
-		# break
+		print('feltételes entrópia', name_a, name_b, Ha - HAB)
+	# break

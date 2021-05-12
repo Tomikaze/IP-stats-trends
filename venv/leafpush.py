@@ -9,8 +9,8 @@ import time
 import copy
 from operator import itemgetter
 
-location = 'D:/x'
-fib_location= 'D:/x/fib_format'
+location = 'F:/cha6'
+fib_location= 'F:/cha6/fib2'
 workFiles = []
 storeList = []
 today = datetime.date.today().strftime("%y-%m-%d")
@@ -196,16 +196,20 @@ if __name__ == "__main__":
 			root = TrieNode('*')
 			print("file read start: " + str(start_time))
 			with open(fib_location +"/"+ file) as fp:
+				prev=""
 				for line in fp:
-					pr_bin = ""
-					tmp = line.split("\t")
-					tmp2 = tmp[0].split("/")
-					pre_len = tmp2[1]
-					prefix = tmp2[0].split(".")
-					for i in prefix:
-						pr_bin += bin(int(i))[2:].zfill(8)
-					pr_bin = pr_bin[0:int(pre_len)]
-					add(root, pr_bin, tmp[1].strip())
+					if line[8] == '0' or prev==line.split("\t")[0]:
+						continue
+					else:
+						pr_bin = ""
+						tmp = line.split("\t")
+						tmp2 = tmp[0].split("/")
+						pre_len = tmp2[1]
+						prefix = tmp2[0].split(".")
+						for i in prefix:
+							pr_bin += bin(int(i))[2:].zfill(8)
+						pr_bin = pr_bin[0:int(pre_len)]
+						add(root, pr_bin, tmp[1].strip())
 
 			print("file read end:" + str(datetime.datetime.now()))
 

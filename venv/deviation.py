@@ -7,6 +7,7 @@ import time
 import copy
 import numpy as np
 import itertools
+import operator
 
 
 
@@ -94,14 +95,14 @@ class Dev:
 		self.per8_stdev = 0
 
 	def tostring(self):
-		str_pref_avg=""
+		str_pref_avg = ""
 		for i in self.pref_avg:
-			str_pref_avg+="," + str(i)
+			str_pref_avg += "," + str(i)
 		str_pref_stdev = ""
 		for i in self.pref_stdev:
 			str_pref_stdev += "," + str(i)
 
-		return str(self.time_stamp)+","+str(self.count_avg)+","+str(self.sum_msp_avg)+","+str(self.count_stdev)+","+str(self.sum_msp_stdev)+str_pref_avg+str_pref_stdev
+		return str(self.time_stamp) + "," + str(self.count_avg) + "," + str(self.sum_msp_avg) + "," + str(self.count_stdev) + "," + str(self.sum_msp_stdev) +',pref_avg'+ str_pref_avg + ',pref_stdev' + str_pref_stdev
 
 
 def read_in_csv(list, filepath):
@@ -207,6 +208,31 @@ def create_fib_list():
 			fib_List[f_index].sum_msp.append(item.sum_msp)
 			fib_List[f_index].per8.append(item.per8)
 
+	new = True
+	for item in vh2_List:
+		new = True
+		for fib in fib_List:
+			if item.time_stamp in fib.time_stamp:
+				f_index = fib_List.index(fib)
+				new = False
+				break
+		if new:
+			element = Dev()
+			element.blank_sheet()
+			element.time_stamp = item.time_stamp
+			element.msp_count.append(item.msp_count)
+			element.pref_count.append(item.pref_count)
+			element.count.append(item.count)
+			element.sum_msp.append(item.sum_msp)
+			element.per8.append(item.per8)
+			fib_List.append(element)
+		else:
+			fib_List[f_index].msp_count.append(item.msp_count)
+			fib_List[f_index].pref_count.append(item.pref_count)
+			fib_List[f_index].count.append(item.count)
+			fib_List[f_index].sum_msp.append(item.sum_msp)
+			fib_List[f_index].per8.append(item.per8)
+
 
 def create_rib_list():
 	for item in linx_List:
@@ -223,7 +249,7 @@ def create_rib_list():
 
 	f_index = 0
 	new = True
-	for item in jinx_List:
+	for item in kixp_List:
 		# print("szeged" + item.time_stamp)
 		new = True
 		for rib in rib_List:
@@ -310,10 +336,30 @@ def calc_avg(lst):
 		day.count_avg = Average(day.count)
 		day.sum_msp_avg = Average(day.sum_msp)
 		day.per8_avg = Average(day.per8)
-		for i in day.msp_count:
-			day.msp_avg.append(Average(i))
-		for i in day.pref_count:
-			day.pref_avg.append(Average(i))
+		if len(day.msp_count) <= 1:
+			for i in range(32):
+				day.msp_avg.append(Average([day.msp_count[0][i]]))
+		if len(day.msp_count) == 2:
+			for i in range(32):
+				day.msp_avg.append(Average([day.msp_count[0][i], day.msp_count[0][i]]))
+		if len(day.msp_count) == 3:
+			for i in range(32):
+				day.msp_avg.append(Average([day.msp_count[0][i], day.msp_count[1][i], day.msp_count[2][i]]))
+		if len(day.msp_count) == 4:
+			for i in range(32):
+				day.msp_avg.append(Average([day.msp_count[0][i], day.msp_count[1][i], day.msp_count[2][i], day.msp_count[3][i]]))
+		if len(day.pref_count) <= 1:
+			for i in range(32):
+				day.pref_avg.append(Average([day.pref_count[0][i]]))
+		if len(day.pref_count) == 2:
+			for i in range(32):
+				day.pref_avg.append(Average([day.pref_count[0][i], day.pref_count[0][i]]))
+		if len(day.pref_count) == 3:
+			for i in range(32):
+				day.pref_avg.append(Average([day.pref_count[0][i], day.pref_count[1][i], day.pref_count[2][i]]))
+		if len(day.pref_count) == 4:
+			for i in range(32):
+				day.pref_avg.append(Average([day.pref_count[0][i], day.pref_count[1][i], day.pref_count[2][i], day.pref_count[3][i]]))
 
 
 def calc_std(lst):
@@ -321,6 +367,32 @@ def calc_std(lst):
 		day.count_stdev = np.std(day.count)
 		day.sum_msp_stdev = np.std(day.sum_msp)
 		day.per8_stdev = np.std(day.per8)
+
+		if len(day.msp_count) <= 1:
+			for i in range(32):
+				day.msp_stdev.append(np.std([day.msp_count[0][i]]))
+		if len(day.msp_count) == 2:
+			for i in range(32):
+				day.msp_stdev.append(np.std([day.msp_count[0][i], day.msp_count[0][i]]))
+		if len(day.msp_count) == 3:
+			for i in range(32):
+				day.msp_stdev.append(np.std([day.msp_count[0][i], day.msp_count[1][i], day.msp_count[2][i]]))
+		if len(day.msp_count) == 4:
+			for i in range(32):
+				day.msp_stdev.append(np.std([day.msp_count[0][i], day.msp_count[1][i], day.msp_count[2][i], day.msp_count[3][i]]))
+		if len(day.pref_count) <= 1:
+			for i in range(32):
+				day.pref_stdev.append(np.std([day.pref_count[0][i]]))
+		if len(day.pref_count) == 2:
+			for i in range(32):
+				day.pref_stdev.append(np.std([day.pref_count[0][i], day.pref_count[0][i]]))
+		if len(day.pref_count) == 3:
+			for i in range(32):
+				day.pref_stdev.append(np.std([day.pref_count[0][i], day.pref_count[1][i], day.pref_count[2][i]]))
+		if len(day.pref_count) == 4:
+			for i in range(32):
+				day.pref_stdev.append(np.std([day.pref_count[0][i], day.pref_count[1][i], day.pref_count[2][i], day.pref_count[3][i]]))
+
 		for i in day.msp_count:
 			day.msp_stdev.append(np.std(i))
 		for i in day.pref_count:
@@ -363,27 +435,27 @@ def correlate(x, y):
 		return (sum(zxzy)) / len(y)
 
 
-
 bme_List = []
 szeged_List = []
 vh1_List = []
 vh2_List = []
 fib_List = []
 linx_List = []
-jinx_List = []
+kixp_List = []
 eqix_List = []
 sydney_List = []
 rib_List = []
 
 if __name__ == "__main__":
-	f_bme = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/bme.csv'
-	f_szeged = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/szeged.csv'
-	f_vh1 = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/vh1.csv'
-	f_vh2 = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/vh2.csv'
-	f_linx = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/linx.csv'
-	f_jinx = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/jinx.csv'
-	f_eqix = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/eqix.csv'
-	f_sydney = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/sydney.csv'
+	loc = "D:/Users/Baki/Documents/GitHub/IP-stats-trends/venv/csv/"
+	f_bme = loc + 'bme.csv'
+	f_szeged = loc + 'szeged.csv'
+	f_vh1 = loc + 'vh1.csv'
+	f_vh2 = loc + 'vh2.csv'
+	f_linx = loc + 'linx.csv'
+	f_kixp = loc + 'kixp.csv'
+	f_eqix = loc + 'eqix.csv'
+	f_sydney = loc + 'sydney.csv'
 
 	read_in_csv(bme_List, f_bme)
 	print("done bme list")
@@ -396,30 +468,25 @@ if __name__ == "__main__":
 
 	read_in_csv(linx_List, f_linx)
 	print("done linx list")
-	read_in_csv(jinx_List, f_jinx)
-	print("done jinx list")
+	read_in_csv(kixp_List, f_kixp)
+	print("done kixp list")
 	read_in_csv(eqix_List, f_eqix)
 	print("done eqix list")
 	read_in_csv(sydney_List, f_sydney)
 	print("done sydney list")
 
+	bme = pd.read_csv(f_bme, parse_dates = ["Date"], index_col = "Date")
+	linx = pd.read_csv(f_linx, parse_dates = ["Date"], index_col = "Date")
 
-
-	# bme = pd.read_csv(f_bme, parse_dates = ["Date"], index_col = "Date")
-	# linx = pd.read_csv(f_linx, parse_dates = ["Date"], index_col = "Date")
-	#
-	# for pair in itertools.product([f_bme,f_szeged,f_vh1,f_vh2], [f_linx,f_jinx,f_eqix,f_sydney]):
-	# 	# print (pair)
-	# 	fib = pd.read_csv(pair[0], parse_dates = ["Date"], index_col = "Date")
-	# 	rib = pd.read_csv(pair[1], parse_dates = ["Date"], index_col = "Date")
-	# 	for f_col,r_col in zip(fib.columns,rib. columns):
-	# 		# if f_col and r_col in ["Total_count", "Msp_sum", "Pref_8", "Pref_9", "Pref_10", "Pref_11", "Pref_12", "Pref_13", "Pref_14", "Pref_15", "Pref_16", "Pref_17", "Pref_18", "Pref_19", "Pref_20", "Pref_21", "Pref_22", "Pref_23", "Pref_24"]:
-	# 			f_list = fib[f_col].values.tolist()
-	# 			r_list = rib[r_col].values.tolist()
-	# 			print(pair[0].split("/")[-1].split(".")[0]+","+pair[1].split("/")[-1].split(".")[0]+","+f_col+ ","+str(correlate(f_list, r_list)))
-
-
-
+	for pair in itertools.product([f_bme,f_szeged,f_vh1,f_vh2], [f_linx,f_kixp,f_eqix,f_sydney]):
+		# print (pair)
+		fib = pd.read_csv(pair[0], parse_dates = ["Date"], index_col = "Date")
+		rib = pd.read_csv(pair[1], parse_dates = ["Date"], index_col = "Date")
+		for f_col,r_col in zip(fib.columns,rib. columns):
+			# if f_col and r_col in ["Total_count", "Msp_sum", "Pref_8", "Pref_9", "Pref_10", "Pref_11", "Pref_12", "Pref_13", "Pref_14", "Pref_15", "Pref_16", "Pref_17", "Pref_18", "Pref_19", "Pref_20", "Pref_21", "Pref_22", "Pref_23", "Pref_24"]:
+				f_list = fib[f_col].values.tolist()
+				r_list = rib[r_col].values.tolist()
+				print(pair[0].split("/")[-1].split(".")[0]+","+pair[1].split("/")[-1].split(".")[0]+","+f_col+ ","+str(correlate(f_list, r_list)))
 
 	create_fib_list()
 	print("done fib list")
@@ -437,51 +504,59 @@ if __name__ == "__main__":
 
 	print("done standard deviation")
 
+	sorted_fib_List = sorted(fib_List, key = operator.attrgetter('time_stamp'))
 
-	for day in fib_List:
-		print(day.tostring())
+	# with open("F:/cha6/fib_list_stat.txt",'w') as fp:
+	# 	for day in sorted_fib_List:
+	# 		fp.write(day.tostring()+'\n')
+	# 	fp.close()
 
 	print("###")
 	print("###")
 	print("###")
 	print("###")
-	for day in rib_List:
-		print(day.tostring())
+
+	sorted_rib_List = sorted(rib_List, key = operator.attrgetter('time_stamp'))
+
+	# with open("F:/cha6/rib_list_stat.txt", 'w') as fp:
+	# 	for day in sorted_rib_List:
+	# 		fp.write(day.tostring() + '\n')
+	# 	fp.close()
 
 	print("end")
 
-# fib_sigma_count = 0
-# fib_avg_count = 0
-# fib_avg_list = []
-# z_fib = []
-#
-# for day in fib_List:
-# 	fib_avg_list.append(day.count_avg)
-# fib_avg_count = Average(fib_avg_list)
-# print(fib_avg_count)
-# fib_sigma_count = np.std(fib_avg_list)
-# print (fib_sigma_count)
-# for i in fib_avg_list:
-# 	z_fib.append((i - fib_avg_count) / fib_sigma_count)
-#
-# rib_sigma_count = 0
-# rib_avg_count = 0
-# rib_avg_list = []
-# z_rib = []
-#
-# for day in rib_List:
-# 	rib_avg_list.append(day.count_avg)
-# rib_avg_count = Average(rib_avg_list)
-# print(rib_avg_count)
-# rib_sigma_count = np.std(rib_avg_list)
-# print (rib_sigma_count)
-# for i in rib_avg_list:
-# 	z_fib.append((i - rib_avg_count) / rib_sigma_count)
-#
-# szum = []
-# for i in range(len(fib_avg_list)):
-# 	x = fib_avg_list[i]
-# 	y = rib_avg_list[i]
-# 	szum.append(((x - fib_avg_count) / fib_sigma_count) * ((y - rib_avg_count) / rib_sigma_count))
-# print(sum(szum))
-# print((sum(szum)) / len(fib_avg_list))
+fib_sigma_count = 0
+fib_avg_count = 0
+fib_avg_list = []
+z_fib = []
+
+for day in fib_List:
+	fib_avg_list.append(day.count_avg)
+fib_avg_count = Average(fib_avg_list)
+print(fib_avg_count)
+fib_sigma_count = np.std(fib_avg_list)
+print (fib_sigma_count)
+for i in fib_avg_list:
+	z_fib.append((i - fib_avg_count) / fib_sigma_count)
+
+rib_sigma_count = 0
+rib_avg_count = 0
+rib_avg_list = []
+z_rib = []
+
+for day in rib_List:
+	rib_avg_list.append(day.count_avg)
+rib_avg_count = Average(rib_avg_list)
+print(rib_avg_count)
+rib_sigma_count = np.std(rib_avg_list)
+print (rib_sigma_count)
+for i in rib_avg_list:
+	z_fib.append((i - rib_avg_count) / rib_sigma_count)
+
+szum = []
+for i in range(len(fib_avg_list)):
+	x = fib_avg_list[i]
+	y = rib_avg_list[i]
+	szum.append(((x - fib_avg_count) / fib_sigma_count) * ((y - rib_avg_count) / rib_sigma_count))
+print(sum(szum))
+print((sum(szum)) / len(fib_avg_list))

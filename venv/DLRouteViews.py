@@ -4,7 +4,7 @@ import os  # file műveletek
 import datetime
 from datetime import date
 
-ix = ['kixp']  # 'linx', 'sydney', 'eqix'
+ix = ['kixp','linx', 'sydney', 'eqix']  # 'linx', 'sydney', 'eqix'
 
 # url = 'http://archive.routeviews.org/route-views.linx/bgpdata/2013.11/RIBS/rib.20131101.0000.bz2' #http://archive.routeviews.org/route-views.saopaulo/bgpdata/2020.12/RIBS/rib.20201201.0000.bz2
 #        http://archive.routeviews.org/route-views.kixp/bgpdata/2014.07/RIBS/rib.20140701.0000.bz2
@@ -53,9 +53,9 @@ def dload(url):
 
 if __name__ == "__main__":
 
-	for y in range(13, 21):     #2013 tól 2021 ig
-		for m in range(1, 13):
-			if (y == 13 and m >= 11) or y >= 14:    #2013 ból csak 11., 12. hónap kell
+	for y in range(21, 22):     #2021 csak
+		for m in range(1, 5):
+			if (y == 21 and m <=5) :    #csak bizonyos hónapok kellenek
 				for d in range(1, 32):
 
 					if m == 2 and d < 29:

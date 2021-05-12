@@ -45,7 +45,7 @@ class Save:
 
 def write_diff_set_csv(list, f):
 	save_name = f.rsplit('/')[-1]
-	file_name = "C:/teszt/csv/" + 'diff_set_' + save_name
+	file_name = "F:/cha6/" + 'diff_set_' + save_name
 	with open(file_name, "w") as fp:
 		header = "Date  diff_prev_1	diff_prev_2	diff_prev_3	diff_prev_4	diff_prev_5	diff_prev_6	diff_prev_7	diff_prev_8	diff_prev_9	diff_prev_10	diff_prev_11	diff_prev_12	diff_prev_13	diff_prev_14	diff_prev_15	diff_prev_16	diff_prev_17	diff_prev_18	diff_prev_19	diff_prev_20	diff_prev_21	diff_prev_22	diff_prev_23	diff_prev_24	diff_prev_25	diff_prev_26	diff_prev_27	diff_prev_28	diff_prev_29	diff_prev_30	diff_prev_31	diff_prev_32\n"
 		header_parts = header.split("\t")
@@ -95,8 +95,9 @@ def read_in_csv(filepath):
 storeList = []
 
 if __name__ == "__main__":
-	file = 'C:/Users/bakit/PycharmProjects/IP-stats-trends/venv/csv/bme.csv'
-	read_in_csv(file)
+	loc = "D:/Users/Baki/Documents/GitHub/IP-stats-trends/venv/csv/"
+	file = 'bme.csv'
+	read_in_csv(loc+file)
 
 	c = 0
 	for i in range(len(storeList)):

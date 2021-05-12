@@ -86,25 +86,54 @@ import operator
 workFiles=[]
 header=''
 
-a='D:/TomiKJ/DIPTERV/CSV'
+filepath='F:/cha6/in'
 
-for root, dirs, files in os.walk(a):
+# for root, dirs, files in os.walk(a):
+# 	for file in files:
+# 		filename=root + '/' + file
+# 		print(filename)
+# 		storelist=[]
+# with open(a+'/asd bme_21-05-07.csv_sorted.csv') as fp:
+# 	header = fp.readline()
+# 	line = fp.readline()
+# 	while line:
+# 		storelist.append(line)
+# 		line = fp.readline()
+# fp.close()
+# storelist.sort()
+# with open(a+'/asd bme_21-05-07.csv_sorted_2.csv','w') as fp:
+# 	fp.write(header)
+# 	for listitem in storelist:
+# 		fp.write(listitem)
+# fp.close()
+
+
+workFiles=[]
+header=''
+
+filepath='F:/cha6/in2'
+
+for root, dirs, files in os.walk(filepath):
 	for file in files:
-		filename=root + '/' + file
-		print(filename)
-		storelist=[]
-with open(a+'/asd bme_21-05-07.csv_sorted.csv') as fp:
-	header = fp.readline()
-	line = fp.readline()
-	while line:
-		storelist.append(line)
-		line = fp.readline()
-fp.close()
-storelist.sort()
-with open(a+'/asd bme_21-05-07.csv_sorted_2.csv','w') as fp:
-	fp.write(header)
-	for listitem in storelist:
-		fp.write(listitem)
-fp.close()
-
-
+		# workFiles.append(root + file)
+		# print(file)
+		els = []
+		mas = []
+		wf=root + '/' + file
+		ff='F:/cha6/' + file
+		print(file,wf,ff)
+		with open(wf) as fp:
+			line = fp.readline()
+			els.append(line)
+			while line:
+				if (len(els) > 1 and els[-1].split("\t")[0] == line.split("\t")[0]):
+					els[-1]=line
+				else:
+					els.append(line)
+				line = fp.readline()
+		fp.close()
+		with open(ff,'w') as fp:
+			fp.write(header)
+			for listitem in els:
+				fp.write(listitem)
+		fp.close()

@@ -3,6 +3,7 @@ import datetime
 from multiprocessing import Pool, Lock
 import re  # regex
 
+
 # cd /mnt/c/teszt/rib
 # cd /mnt/d/Users/Baki/Documents/GitHub/IP-stats-trends/venv
 '''
@@ -18,9 +19,9 @@ otthoni
 # https://manpages.debian.org/testing/bgpdump/bgpdump.1.en.html
 # bgpdump rib.20190101.0000.bz2 -O 20190101.txt
 
-source = 'kixp'
+source = 'linx'
 location ='/mnt/f/new_rib/' #'C:/rib_teszt/' '/mnt/f/new_rib/'   /mnt/c/teszt/rib/ C:/teszt/rib/
-txt_location ='/mnt/c/rib_teszt/'#'C:/rib_teszt/'   '/mnt/c/rib_teszt/'
+txt_location ='/mnt/c/new_rib/'#'C:/rib_teszt/'   '/mnt/c/rib_teszt/'
 bz2_dir = source + '/'
 txt_dir = source + '_rib_txt/'
 fib_dir = source + '_rib_fib_format/'
@@ -115,7 +116,7 @@ if __name__ == "__main__":
 
 	l = Lock()
 	# pool = Pool(initializer = init, initargs = (l,), processes = os.cpu_count())
-	pool = Pool(initializer = init, initargs = (l,), processes = 2)
+	pool = Pool(initializer = init, initargs = (l,), processes = 3)
 
 	result = pool.map(bz2_to_fib, rib_list)
 	pool.close()
