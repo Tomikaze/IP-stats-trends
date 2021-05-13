@@ -12,8 +12,8 @@ import numpy as np
 import math
 from typing import Any
 
-out_location = 'F:/cha6/compare_2020/'
-rle_location = 'F:/cha6/rle_2020/'
+out_location = 'G:/cha6/compare_2019/'
+rle_location = 'G:/cha6/rle_2019/'
 two32 = 2 ** 32
 today = datetime.date.today().strftime("%y-%m-%d")
 
@@ -48,15 +48,14 @@ if __name__ == "__main__":
 		with open(rle_location + a) as fpa:
 			for line in fpa:  # ['0', 768]
 				nh = line.split("\'")[1]
-				if  nh !='0':
-					count = line[:-2].split(" ")[1]
-					if nh in a_nh:
-						nh_i = a_nh.index(nh)
-					else:
-						a_nh.append(nh)
-						nh_i = a_nh.index(nh)
-					element = [nh_i, int(count)]
-					a_lst.append(element)
+				count = line[:-2].split(" ")[1]
+				if nh in a_nh:
+					nh_i = a_nh.index(nh)
+				else:
+					a_nh.append(nh)
+					nh_i = a_nh.index(nh)
+				element = [nh_i, int(count)]
+				a_lst.append(element)
 		fpa.close()
 		''' FIB nexthopok kiírása'''
 		with open(out_location + name_a + "_nexthops.txt", 'w+') as f:
@@ -67,15 +66,14 @@ if __name__ == "__main__":
 		with open(rle_location + b) as fpb:
 			for line in fpb:  # ['0', 768]
 				nh = line.split("\'")[1]
-				if nh != '0':
-					count = line[:-2].split(" ")[1]
-					if nh in b_nh:
-						nh_i = b_nh.index(nh)
-					else:
-						b_nh.append(nh)
-						nh_i = b_nh.index(nh)
-					element = [nh_i, int(count)]
-					b_lst.append(element)
+				count = line[:-2].split(" ")[1]
+				if nh in b_nh:
+					nh_i = b_nh.index(nh)
+				else:
+					b_nh.append(nh)
+					nh_i = b_nh.index(nh)
+				element = [nh_i, int(count)]
+				b_lst.append(element)
 		fpb.close()
 		''' RIB file beolvasása tömb be'''
 		with open(out_location + name_b + "_nexthops.txt", 'w+') as f:
@@ -198,24 +196,30 @@ if __name__ == "__main__":
 		# Hnb = sum(hb)
 		# print("0. elem nélküli Entropia H: " + str(Hnb))
 
-		# 10 leggyakoribb nexhop cím valószínűsége
+
+		# 5 leggyakoribb nexhop cím valószínűsége
+		pa.sort(reverse = True)
+		pb.sort(reverse = True)
 		print('perem eloszlás', name_a, name_b)
-		for i in range(10):
-			print(ha[i], hb[i])
+		for i in range(5):
+			print(pa[i],',', pb[i])
 		#
 		# print('entrópia')
-		print('entrópia', name_a, Ha, str(math.log2(len(a_nh))))
-		print('entrópia', name_b, Hb, str(math.log2(len(b_nh))))
+		print('entrópia,', name_a,',', Ha,',', str(math.log2(len(a_nh))))
+		print('entrópia,', name_b,',', Hb,',', str(math.log2(len(b_nh))))
 		#
 		# print('feltételes entrópia')
 		HAB = 0
-		for j in range(len(b_nh)):
-			for i in range(len(a_nh)):
-				log = cn[i][j] / pb[j]
-				# print(log)
-				if log != 0:
-					HAB += -1 * cn[i][j] * math.log2(log)
+		cn[0][0]=0
+		# for j in range(len(b_nh)):
+		# 	for i in range(len(a_nh)):
+		# 		log = cn[i][j] / pb[j]
+		# 		# print(log)
+		# 		if log != 0:
+		# 			HAB += -1 * cn[i][j] * math.log2(log)
 
-		# print(name_a,name_b,HAB)
-		print('feltételes entrópia', name_a, name_b, Ha - HAB)
+		print('feltételes entrópia',',',name_a,name_b,',',HAB)
+		print('független:,',Ha+Hb)
+		print('meghatározott 0 vagy',Ha,Hb)
+		print('kölcsönös érték', name_a, name_b,',', Ha - HAB)
 	# break
